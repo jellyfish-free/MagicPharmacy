@@ -34,7 +34,7 @@
           <h3 style="margin-top:20px">2. 調査方法を選ぶ</h3>
           <div id="methodChoices" class="choices"></div>
         </div>
-        <div id="craftBox" class="hidden"><h3>2. 薬草を調合する</h3><p class="muted">所持数が0の素材は選択できません。調合すると成功・失敗に関係なく素材と授業1回を消費します。</p><div class="actions"><button class="btn secondary" id="tabRecipes">公開レシピ</button><button class="btn secondary" id="tabFree">自由調合（特殊薬の研究）</button></div><div id="recipePanel"></div><div id="ingredientPanel" class="hidden"><h3>自由調合：素材を選択</h3><div id="ingredientList" class="ingredient-grid"></div><p id="selectedSummary" class="muted"></p><div class="actions"><button class="btn" id="craftFree">この組み合わせで調合する</button><button class="btn secondary" id="clearSelection">素材の選択を解除する</button></div></div></div><div id="result" class="event hidden" aria-live="polite"></div>
+        <div id="craftBox" class="hidden"><h3>2. 薬草を調合する</h3><p class="muted">所持数が0の素材は選択できません。調合すると成功・失敗に関係なく素材と授業1回を消費します。</p><div id="craftResult" class="event craft-result hidden" aria-live="polite"></div><div class="actions"><button class="btn secondary" id="tabRecipes">公開レシピ</button><button class="btn secondary" id="tabFree">自由調合（特殊薬の研究）</button></div><div id="recipePanel"></div><div id="ingredientPanel" class="hidden"><h3>自由調合：素材を選択</h3><div id="ingredientList" class="ingredient-grid"></div><p id="selectedSummary" class="muted"></p><div class="actions"><button class="btn" id="craftFree">この組み合わせで調合する</button><button class="btn secondary" id="clearSelection">素材の選択を解除する</button></div></div></div><div id="result" class="event hidden" aria-live="polite"></div>
       </div>
     </section>
     <section id="page-inventory" class="page hidden">

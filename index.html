@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#243b31">
+<title>アステル教授の植物学実習帳</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><div class="eyebrow">ORPHERIS ACADEMY · BOTANICAL STUDIES</div><h1>アステル教授の植物学実習帳</h1><div class="subtitle">観察し、探し、発見する。あなただけの植物図鑑。</div></header>
+<div class="wrap">
+  <section class="stats">
+    <div class="stat"><strong id="found">0 / 60</strong><span>図鑑の発見数</span><div class="progress"><div id="progress"></div></div></div>
+    <div class="stat"><strong id="possessed">0</strong><span>所持アイテム総数</span></div>
+    <div class="stat"><strong id="lessons">0</strong><span>受けた授業</span></div>
+  </section>
+  <nav id="nav">
+    <button class="active" data-page="class">授業・探索</button><button data-page="inventory">所持品</button><button data-page="catalog">植物図鑑</button><button data-page="records">研究記録</button>
+  </nav>
+  <main>
+    <section id="page-class" class="page">
+      <div class="panel">
+        <h2>今日の実習</h2>
+        <p class="muted">授業を選び、調査方法を決めて、まだ見ぬ発見を探しましょう。回数制限はありません。</p>
+        <div class="teacher"><strong>アステル教授</strong><br>「世界には、まだ誰にも見つけられていないものがたくさんあるんです。さて、今日はどこから調べてみましょうか？」</div>
+        <h3>1. 授業を選ぶ</h3>
+        <div class="choices" id="lessonChoices">
+          <button class="choice" data-lesson="温室実習"><strong>🌿 温室実習</strong><small>薬草、花弁、発光する植物を観察する。</small></button>
+          <button class="choice" data-lesson="薬草調合"><strong>⚗️ 薬草調合実習</strong><small>素材を組み合わせ、研究用の調合品を作る。</small></button>
+          <button class="choice" data-lesson="野外調査"><strong>🌙 希少植物の野外調査</strong><small>森や水辺、根元の土から未知の手がかりを探す。</small></button>
+        </div>
+        <div id="methodBox" class="hidden">
+          <h3 style="margin-top:20px">2. 調査方法を選ぶ</h3>
+          <div id="methodChoices" class="choices"></div>
+        </div>
+        <div id="result" class="event hidden" aria-live="polite"></div>
+      </div>
+    </section>
+    <section id="page-inventory" class="page hidden">
+      <div class="panel"><h2>所持品</h2><p class="muted">発見したアイテムを確認できます。同じアイテムを複数所持できます。</p><div class="filters"><select id="invCategory"><option value="">すべてのカテゴリ</option></select><input id="invSearch" placeholder="アイテム名で検索"></div><div id="inventoryGrid" class="grid"></div></div>
+    </section>
+    <section id="page-catalog" class="page hidden">
+      <div class="panel"><h2>植物学実習図鑑</h2><p class="muted">初めて入手したアイテムが登録されます。全60種類の発見を目指しましょう。</p><div class="filters"><select id="catCategory"><option value="">すべてのカテゴリ</option></select><select id="catStatus"><option value="all">すべて</option><option value="found">発見済み</option><option value="missing">未発見</option></select><input id="catSearch" placeholder="図鑑を検索"></div><div id="catalogGrid" class="grid"></div></div>
+    </section>
+    <section id="page-records" class="page hidden">
+      <div class="panel"><h2>研究記録</h2><p class="muted">授業の履歴と達成状況を確認できます。</p><div id="recordSummary" class="notice"></div><h3>発見の記録</h3><div id="recordList"></div><div class="actions"><button class="btn secondary" id="exportBtn">セーブデータを書き出す</button><button class="btn secondary" id="importBtn">セーブデータを読み込む</button><button class="btn secondary" id="resetBtn">最初からやり直す</button><input id="importFile" type="file" accept="application/json" class="hidden"></div><p class="muted">進捗はこのブラウザに保存されます。別の端末に移すときはセーブデータを書き出してください。</p></div>
+    </section>
+  </main>
+  <div class="footer">Orpheris Academy · Botanical Studies · 進捗はお使いのブラウザ内に保存されます。</div>
+</div>
+<script src="game.js"></script>
+</body></html>

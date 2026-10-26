@@ -13,3 +13,15 @@ nav{display:flex;gap:7px;overflow:auto;padding:4px 0 13px;margin-bottom:10px}nav
 .choice small{display:block;margin-top:4px;color:#6d786e;line-height:1.5}.choice strong{display:block}.btn:disabled{opacity:.45;cursor:not-allowed}
 
 .choice:disabled{opacity:.45;cursor:not-allowed;transform:none;pointer-events:none}
+
+/* 追加: 調合画面。既存デザインの配色を継承 */
+.ingredient-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:9px;margin:12px 0}
+.ingredient-row{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--white);border:1px solid var(--line);border-radius:11px;padding:9px 11px;font-size:.86rem}
+.ingredient-row .qty-control{display:flex;align-items:center;gap:6px}
+.ingredient-row button{width:29px;height:29px;border:1px solid var(--line);border-radius:8px;background:var(--cream);color:var(--ink);cursor:pointer;font-weight:700}
+.ingredient-row button:disabled{opacity:.35;cursor:not-allowed}
+.ingredient-row .qty{min-width:15px;text-align:center;font-weight:700}
+.choice:disabled{opacity:.42;cursor:not-allowed;transform:none}
+.choice.active{border-color:var(--green);background:#edf0e4}
+.recipe-card{display:flex;flex-direction:column;gap:5px}
+.recipe-card .actions{margin-top:auto}

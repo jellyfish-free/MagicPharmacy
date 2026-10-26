@@ -16,7 +16,7 @@
     <div class="stat"><strong id="lessons">0</strong><span>受けた授業</span></div>
   </section>
   <nav id="nav">
-    <button class="active" data-page="class">授業・探索</button><button data-page="inventory">所持品</button><button data-page="catalog">植物図鑑</button><button data-page="records">研究記録</button>
+    <button class="active" data-page="class">授業・探索</button><button data-page="inventory">所持品</button><button data-page="catalog">植物図鑑</button><button data-page="potions">調合・レシピ</button><button data-page="records">研究記録</button>
   </nav>
   <main>
     <section id="page-class" class="page">
@@ -38,10 +38,25 @@
       </div>
     </section>
     <section id="page-inventory" class="page hidden">
-      <div class="panel"><h2>所持品</h2><p class="muted">発見したアイテムを確認できます。同じアイテムを複数所持できます。</p><div class="filters"><select id="invCategory"><option value="">すべてのカテゴリ</option></select><input id="invSearch" placeholder="アイテム名で検索"></div><div id="inventoryGrid" class="grid"></div></div>
+      <div class="panel"><h2>所持品</h2><p class="muted">発見したアイテムを確認できます。同じアイテムを複数所持できます。調合した薬は「調合・レシピ」から確認できます。</p><div class="filters"><select id="invCategory"><option value="">すべてのカテゴリ</option></select><input id="invSearch" placeholder="アイテム名で検索"></div><div id="inventoryGrid" class="grid"></div></div>
     </section>
     <section id="page-catalog" class="page hidden">
       <div class="panel"><h2>植物学実習図鑑</h2><p class="muted">初めて入手したアイテムが登録されます。全60種類の発見を目指しましょう。</p><div class="filters"><select id="catCategory"><option value="">すべてのカテゴリ</option></select><select id="catStatus"><option value="all">すべて</option><option value="found">発見済み</option><option value="missing">未発見</option></select><input id="catSearch" placeholder="図鑑を検索"></div><div id="catalogGrid" class="grid"></div></div>
+    </section>
+    <section id="page-potions" class="page hidden">
+      <div class="panel">
+        <h2>⚗️ 薬草調合室</h2>
+        <p class="muted">所持する素材を選んで調合します。水は共通材料のため不要です。調合を試みると成功・失敗に関わらず本日の授業を1回消費します。材料不足の場合は消費しません。</p>
+        <div class="teacher"><strong>アステル教授</strong><br>「レシピを発見する楽しみも、調合の醍醐味です。素材の組み合わせをよく考えてみてくださいね」</div>
+        <h3>素材を選ぶ</h3>
+        <div id="ingredientChoices" class="ingredient-grid"></div>
+        <div class="actions"><button id="craftBtn" class="btn">この素材で調合する</button><button id="clearIngredients" class="btn secondary">選択を解除</button></div>
+        <p id="ingredientSummary" class="muted"></p>
+        <div id="craftResult" class="event hidden" aria-live="polite"></div>
+        <h3>レシピ帳</h3><p class="muted">基本薬10種と秘密の特殊薬5種。特殊薬の材料は初回成功まで非公開です。</p>
+        <div id="recipeGrid" class="grid"></div>
+        <h3>完成した薬</h3><div id="potionInventory" class="grid"></div>
+      </div>
     </section>
     <section id="page-records" class="page hidden">
       <div class="panel"><h2>研究記録</h2><p class="muted">授業の履歴と達成状況を確認できます。</p><div id="recordSummary" class="notice"></div><h3>発見の記録</h3><div id="recordList"></div><div class="actions"><button class="btn secondary" id="exportBtn">セーブデータを書き出す</button><button class="btn secondary" id="importBtn">セーブデータを読み込む</button><button class="btn secondary" id="resetBtn">最初からやり直す</button><input id="importFile" type="file" accept="application/json" class="hidden"></div><p class="muted">進捗はこのブラウザに保存されます。別の端末に移すときはセーブデータを書き出してください。</p></div>

@@ -20,22 +20,114 @@ const METHODS = {
   {id:"rare",title:"珍しい植物の特徴を記録する",desc:"植物の形状や色、生育場所を記録して分類する。",cats:["幻想植物","採取素材・標本","研究記録・特別な発見"]}
  ]
 };
+
+// ================================================
+// 追加: 基本薬10種・特殊薬5種
+// 既存60種のIDに対応。特殊薬のレシピは発見前非公開。
+// ================================================
+const BASIC_POTIONS=[
+ {id:"P01",name:"薬草の安らぎ水",level:1,recipe:{"002":2,"007":1},desc:"緊張を和らげる淡緑色の薬液。"},
+ {id:"P02",name:"まどろみの香油",level:1,recipe:{"003":2,"019":1},desc:"穏やかな睡眠を助ける淡紫色の香油。"},
+ {id:"P03",name:"冷感ミント液",level:1,recipe:{"004":2},desc:"器具を冷ますための透明な冷却液。水は常備品。"},
+ {id:"P04",name:"活力の薬液",level:1,recipe:{"001":1,"005":1,"009":1},desc:"体調維持を補助する琥珀色の薬液。"},
+ {id:"P05",name:"琥珀保存液",level:1,recipe:{"039":1,"005":1},desc:"標本の保存に使う黄金色の液。"},
+ {id:"P06",name:"発光観察液",level:2,recipe:{"040":1,"037":1},desc:"光る反応を観察する研究液。"},
+ {id:"P07",name:"魔力定着液",level:2,recipe:{"037":1,"039":1,"038":1},desc:"魔力を安定させる銀青色の液体。"},
+ {id:"P08",name:"霜結晶の冷却薬",level:2,recipe:{"042":2,"004":1},desc:"熱を吸収する冷却薬。"},
+ {id:"P09",name:"夢紡ぎの香瓶",level:2,recipe:{"019":1,"003":1,"037":1},desc:"穏やかな夢を助ける香瓶。"},
+ {id:"P10",name:"しびれ毒",level:3,recipe:{"031":1,"040":1,"045":1},desc:"魔法世界の毒性研究用の架空の薬。"}
+];
+const SPECIAL_POTIONS=[
+ {id:"P11",name:"心華の雫",clue:"鮮やかな花弁と、光を宿す花、夜明けの露が鍵です。",recipe:{"008":1,"016":1,"037":1},desc:"淡い薔薇色に輝く、気分や感覚を高める薬液。相手の意思は変えない。"},
+ {id:"P12",name:"幻惑の滴",clue:"薄明のシダと、光を反射する素材、青い胞子を組み合わせる。",recipe:{"030":1,"044":1,"040":1},desc:"光や音の知覚を一時的に変化させる暗紫色の薬液。"},
+ {id:"P13",name:"解毒の霊薬",clue:"野外の薬草を二種類、琥珀色の樹液と調合する。",recipe:{"010":1,"009":1,"039":1},desc:"毒や状態異常の回復を研究する深緑色の薬液。"},
+ {id:"P14",name:"浮遊の秘薬",clue:"浮かぶ種子と、星露、保存できる樹液に着目する。",recipe:{"041":1,"037":1,"039":1},desc:"小さな物体を一時的に軽くする浮遊補助薬。"},
+ {id:"P15",name:"未知植物の精髄",clue:"未知の銀青花、その種子、星露と樹液を合わせる。",recipe:{"035":1,"045":1,"037":1,"039":1},desc:"植物の魔力を増幅する銀青色の希少な薬液。"}
+];
+const ALL_POTIONS=[...BASIC_POTIONS,...SPECIAL_POTIONS];
+const itemById=id=>ITEMS.find(i=>i.id===id);
+const itemLabel=id=>itemById(id)?.name||id;
+const recipeText=recipe=>Object.entries(recipe).map(([id,n])=>`${itemLabel(id)} ×${n}`).join(" / ");
+let chosenIngredients={};
+function ensurePotionState(){
+ state.potionInventory ||= {};
+ state.learnedRecipes ||= [];
+ state.potionHistory ||= [];
+}
+function renderPotionRoom(){
+ ensurePotionState();
+ const choices=document.getElementById("ingredientChoices");
+ if(!choices)return;
+ choices.innerHTML=ITEMS.filter(i=>+i.id<=45).filter(i=>(state.inventory[i.id]||0)>0).map(i=>{
+  const n=chosenIngredients[i.id]||0,have=state.inventory[i.id];
+  return `<div class="ingredient-row"><span>${i.name}<small class="muted"> (所持 ${have})</small></span><span class="qty-control"><button data-ingredient="${i.id}" data-delta="-1" ${n<=0?'disabled':''} aria-label="${i.name}を減らす">−</button><span class="qty">${n}</span><button data-ingredient="${i.id}" data-delta="1" ${n>=have?'disabled':''} aria-label="${i.name}を増やす">＋</button></span></div>`;
+ }).join("")||'<div class="empty">素材を持っていません。温室実習か野外調査で採取しましょう。</div>';
+ choices.querySelectorAll("[data-ingredient]").forEach(b=>b.addEventListener("click",()=>{
+  const id=b.dataset.ingredient;
+  chosenIngredients[id]=Math.max(0,Math.min(state.inventory[id]||0,(chosenIngredients[id]||0)+Number(b.dataset.delta)));
+  if(!chosenIngredients[id])delete chosenIngredients[id];
+  renderPotionRoom();
+ }));
+ const selection=document.getElementById("ingredientSummary");
+ selection.textContent=Object.keys(chosenIngredients).length?`選択中：${recipeText(chosenIngredients)}`:"素材を選択してください。";
+ document.getElementById("craftBtn").disabled=getDailyCount()>=DAILY_LIMIT;
+ const grid=document.getElementById("recipeGrid");
+ grid.innerHTML=ALL_POTIONS.map(p=>{
+  const learned=state.learnedRecipes.includes(p.id),special=SPECIAL_POTIONS.some(x=>x.id===p.id);
+  const canMake=learned&&Object.entries(p.recipe).every(([id,n])=>(state.inventory[id]||0)>=n);
+  return `<article class="item recipe-card"><div class="num">${p.id} · ${special?'特殊薬':`基本薬 Lv.${p.level}`}</div><h3>${special&&!learned?'？？？':p.name}</h3><p>${special&&!learned?p.clue:p.desc}</p><p class="muted">${special&&!learned?'未発見のため配合は非公開':`材料：${recipeText(p.recipe)}`}</p>${learned?'<span class="tag gold">レシピ発見済み</span>':'<span class="tag">未発見</span>'}${learned?`<div class="actions"><button class="btn secondary" data-recraft="${p.id}" ${canMake&&getDailyCount()<DAILY_LIMIT?'':'disabled'}>再調合する</button></div>`:''}</article>`;
+ }).join("");
+ grid.querySelectorAll("[data-recraft]").forEach(b=>b.addEventListener("click",()=>craftPotion(ALL_POTIONS.find(p=>p.id===b.dataset.recraft).recipe)));
+ document.getElementById("potionInventory").innerHTML=ALL_POTIONS.filter(p=>(state.potionInventory[p.id]||0)>0).map(p=>`<div class="item"><h3>⚗️ ${p.name}</h3><p>${p.desc}</p><div class="count">所持数：${state.potionInventory[p.id]}</div></div>`).join("")||'<div class="empty">完成した薬はまだありません。</div>';
+}
+function craftPotion(ingredients=chosenIngredients){
+ ensurePotionState();
+ const result=document.getElementById("craftResult");
+ const show=(message)=>{result.classList.remove("hidden");result.textContent=message};
+ if(getDailyCount()>=DAILY_LIMIT){renderDailyLimit();show("本日の授業は3回終了しています。また明日調合してください。");return;}
+ const entries=Object.entries(ingredients).filter(([,n])=>n>0);
+ if(!entries.length){show("素材を1つ以上選択してください。");return;}
+ if(entries.some(([id,n])=>!Number.isInteger(n)||n<1||(state.inventory[id]||0)<n)){show("素材が不足しています。所持品を確認してください。");renderPotionRoom();return;}
+ // 配合が完全一致した場合のみ成功。失敗時は素材を消費しないが授業を1回消費。
+ const potion=ALL_POTIONS.find(p=>Object.keys(p.recipe).length===entries.length&&entries.every(([id,n])=>p.recipe[id]===n));
+ setDailyCount(getDailyCount()+1);
+ state.lessons++;
+ state.lessonCounts["薬草調合"]=(state.lessonCounts["薬草調合"]||0)+1;
+ if(potion){
+  for(const [id,n] of entries)state.inventory[id]-=n;
+  state.potionInventory[potion.id]=(state.potionInventory[potion.id]||0)+1;
+  const first=!state.learnedRecipes.includes(potion.id);
+  if(first)state.learnedRecipes.push(potion.id);
+  state.potionHistory.unshift({date:new Date().toLocaleString("ja-JP"),message:`${potion.name}を${first?'初めて完成・レシピ発見':'再調合'}した`});
+  show(`${first?'✨ 新しいレシピを発見！':'⚗️ 調合成功！'} ${potion.name}を1個入手しました。${first?'以後、レシピ帳から再調合できます。':''}`);
+ }else{
+  state.potionHistory.unshift({date:new Date().toLocaleString("ja-JP"),message:"調合を試みたが完成しなかった"});
+  show("調合に失敗しました。素材は返却されますが、授業回数は1回消費します。組み合わせと個数を見直しましょう。");
+ }
+ state.potionHistory=state.potionHistory.slice(0,80);
+ chosenIngredients={};
+ save();renderInventory();renderCatalog();renderRecords();renderPotionRoom();renderDailyLimit();
+}
+document.getElementById("craftBtn").addEventListener("click",()=>craftPotion());
+document.getElementById("clearIngredients").addEventListener("click",()=>{chosenIngredients={};renderPotionRoom()});
+
 const STORAGE="asterBotanicalJournal_v2";
 const DAILY_LIMIT=3;
 const dayKey=()=>{const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`};
 function getDailyCount(){try{const d=JSON.parse(localStorage.getItem(STORAGE+"_daily")||"{}");return d.date===dayKey()?d.count||0:0}catch(e){return 0}}
 function setDailyCount(count){localStorage.setItem(STORAGE+"_daily",JSON.stringify({date:dayKey(),count}))}
-const initial=()=>({inventory:{},found:[],lessons:0,lessonCounts:{},history:[],completed:false});
+const initial=()=>({inventory:{},found:[],lessons:0,lessonCounts:{},history:[],completed:false,potionInventory:{},learnedRecipes:[],potionHistory:[]});
 let state=loadState(), selectedLesson="", selectedMethod="";
 function loadState(){try{return {...initial(),...JSON.parse(localStorage.getItem(STORAGE)||"{}")}}catch(e){return initial()}}
 function save(){localStorage.setItem(STORAGE,JSON.stringify(state));renderStats();renderDailyLimit()}
-function renderStats(){const found=state.found.length;document.getElementById("found").textContent=`${found} / ${ITEMS.length}`;document.getElementById("progress").style.width=`${found/ITEMS.length*100}%`;document.getElementById("possessed").textContent=Object.values(state.inventory).reduce((a,b)=>a+b,0);document.getElementById("lessons").textContent=state.lessons}
+function renderStats(){const found=state.found.length;document.getElementById("found").textContent=`${found} / ${ITEMS.length}`;document.getElementById("progress").style.width=`${found/ITEMS.length*100}%`;document.getElementById("possessed").textContent=Object.values(state.inventory).reduce((a,b)=>a+b,0)+Object.values(state.potionInventory||{}).reduce((a,b)=>a+b,0);document.getElementById("lessons").textContent=state.lessons}
 function renderDailyLimit(){
  const count=getDailyCount(), exhausted=count>=DAILY_LIMIT;
  const el=document.getElementById("dailyLimit");
  if(el)el.textContent=exhausted?`本日の授業：${count} / ${DAILY_LIMIT} 回（本日は終了。次の授業は明日から）`:`本日の授業：${count} / ${DAILY_LIMIT} 回（残り${DAILY_LIMIT-count}回）`;
  document.querySelectorAll("[data-lesson], [data-method]").forEach(btn=>btn.disabled=exhausted);
  const again=document.getElementById("againBtn");
+ const craft=document.getElementById("craftBtn");if(craft)craft.disabled=exhausted;
  if(again){again.disabled=exhausted;again.textContent=exhausted?"本日の授業は終了":"もう一度実習する";}
 }
 function rarityScore(r){return (r.match(/★/g)||[]).length}
@@ -164,14 +256,14 @@ function itemCard(i,locked=false){const count=state.inventory[i.id]||0;const ico
 function renderInventory(){const cat=document.getElementById("invCategory").value||"",q=(document.getElementById("invSearch").value||"").toLowerCase();const list=ITEMS.filter(i=>(state.inventory[i.id]||0)>0&&(!cat||i.category===cat)&&i.name.toLowerCase().includes(q));document.getElementById("inventoryGrid").innerHTML=list.length?list.map(i=>itemCard(i)).join(""):`<div class="empty">まだアイテムを持っていません。授業に参加して、最初の発見をしましょう。</div>`}
 function renderCatalog(){const cat=document.getElementById("catCategory").value||"",status=document.getElementById("catStatus").value,q=(document.getElementById("catSearch").value||"").toLowerCase();const list=ITEMS.filter(i=>(!cat||i.category===cat)&&(status==="all"||(status==="found"?state.found.includes(i.id):!state.found.includes(i.id)))&&(i.name.toLowerCase().includes(q)||i.id.includes(q)));document.getElementById("catalogGrid").innerHTML=list.map(i=>itemCard(i,!state.found.includes(i.id))).join("")||`<div class="empty">該当するアイテムはありません。</div>`}
 function renderRecords(){document.getElementById("recordSummary").innerHTML=`授業回数：<strong>${state.lessons}</strong>回<br>発見済み：<strong>${state.found.length} / ${ITEMS.length}</strong>種類<br>完成率：<strong>${Math.floor(state.found.length/ITEMS.length*100)}%</strong><br>温室実習：${state.lessonCounts["温室実習"]||0}回／薬草調合：${state.lessonCounts["薬草調合"]||0}回／野外調査：${state.lessonCounts["野外調査"]||0}回${state.completed?"<br><strong>植物学実習図鑑 完成済み</strong>":""}`;document.getElementById("recordList").innerHTML=state.history.length?state.history.map(h=>{let i=ITEMS.find(x=>x.id===h.item);return `<div class="item" style="margin-top:8px"><strong>${h.first?"★ 初発見":"重複入手"}：${i?i.name:h.item}</strong><div class="muted">${h.time} · ${h.lesson} · ${h.method}</div></div>`}).join(""):`<div class="empty">まだ研究記録はありません。</div>`}
-function showPage(page){document.querySelectorAll(".page").forEach(p=>p.classList.toggle("hidden",p.id!=="page-"+page));document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page));if(page==="inventory")renderInventory();if(page==="catalog")renderCatalog();if(page==="records")renderRecords();window.scrollTo({top:0,behavior:"smooth"})}
+function showPage(page){document.querySelectorAll(".page").forEach(p=>p.classList.toggle("hidden",p.id!=="page-"+page));document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page));if(page==="inventory")renderInventory();if(page==="catalog")renderCatalog();if(page==="records")renderRecords();if(page==="potions")renderPotionRoom();window.scrollTo({top:0,behavior:"smooth"})}
 document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
 document.querySelectorAll("[data-lesson]").forEach(b=>b.addEventListener("click",()=>setLesson(b.dataset.lesson)));
 function fillCategories(){const cats=[...new Set(ITEMS.map(i=>i.category))];["invCategory","catCategory"].forEach(id=>{const el=document.getElementById(id);cats.forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;el.appendChild(o)})})}
 ["invCategory","invSearch"].forEach(id=>document.getElementById(id).addEventListener("input",renderInventory));
 ["catCategory","catStatus","catSearch"].forEach(id=>document.getElementById(id).addEventListener("input",renderCatalog));
-document.getElementById("exportBtn").addEventListener("click",()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="aster-botanical-save.json";a.click();URL.revokeObjectURL(a.href)});
+document.getElementById("exportBtn").addEventListener("click",()=>{const blob=new Blob([JSON.stringify({...state,daily:{date:dayKey(),count:getDailyCount()}},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="aster-botanical-save.json";a.click();URL.revokeObjectURL(a.href)});
 document.getElementById("importBtn").addEventListener("click",()=>document.getElementById("importFile").click());
-document.getElementById("importFile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{const obj=JSON.parse(await f.text());if(!obj.inventory||!Array.isArray(obj.found))throw Error();state={...initial(),...obj};save();renderInventory();renderCatalog();renderRecords();alert("セーブデータを読み込みました。")}catch(err){alert("このセーブデータは読み込めませんでした。")}e.target.value=""});
-document.getElementById("resetBtn").addEventListener("click",()=>{if(confirm("所持品と図鑑の進捗をすべて消して最初から始めますか？")){state=initial();save();renderInventory();renderCatalog();renderRecords();document.getElementById("result").classList.add("hidden")}});
-fillCategories();renderStats();renderDailyLimit();renderInventory();renderCatalog();renderRecords();
+document.getElementById("importFile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{const obj=JSON.parse(await f.text());if(!obj.inventory||!Array.isArray(obj.found))throw Error();state={...initial(),...obj};ensurePotionState();chosenIngredients={};if(obj.daily?.date===dayKey())setDailyCount(Math.max(getDailyCount(),Math.min(DAILY_LIMIT,Number(obj.daily.count)||0)));save();renderInventory();renderCatalog();renderRecords();alert("セーブデータを読み込みました。")}catch(err){alert("このセーブデータは読み込めませんでした。")}e.target.value=""});
+document.getElementById("resetBtn").addEventListener("click",()=>{if(confirm("所持品と図鑑の進捗をすべて消して最初から始めますか？")){state=initial();chosenIngredients={};setDailyCount(0);save();renderInventory();renderCatalog();renderRecords();document.getElementById("result").classList.add("hidden")}});
+fillCategories();renderPotionRoom();renderStats();renderDailyLimit();renderInventory();renderCatalog();renderRecords();

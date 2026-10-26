@@ -24,13 +24,10 @@ nav{display:flex;gap:7px;overflow:auto;padding:4px 0 13px;margin-bottom:10px}nav
 /* TEST mode: retains existing palette and layout */
 .test-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:15px 0 5px}.test-toolbar .btn{white-space:nowrap}.test-toolbar .btn.test-active{background:#f1e3bb;border-color:var(--gold);color:var(--ink)}body.test-mode header{border-bottom-color:#e0bc65}body.test-mode .test-toolbar{border-left:3px solid var(--gold);padding-left:10px}
 
-/* 調合結果は説明とレシピ切替ボタンの間に配置 */
-.craft-result{margin:16px 0 14px;padding:16px;border-radius:14px}
-.craft-result h2{margin-top:0}
-
-
-/* アイテム画像: 図鑑カード・発見結果・調合成功結果で共通使用 */
-.specimen-photo{overflow:hidden;position:relative;background:radial-gradient(circle at 50% 38%,#e9e7bd,#d9e6d6 45%,#a8bba2)}
-.specimen-photo img{width:100%;height:100%;object-fit:cover;display:block;border-radius:12px}
-.specimen-fallback{display:none;place-items:center;width:100%;height:100%;font-size:2.25rem;background:radial-gradient(circle at 50% 38%,#e9e7bd,#d9e6d6 45%,#a8bba2)}
-.specimen-fallback-visible{display:grid}
+/* タイトル背景画像（images/top.png）を表示 */
+header {
+  background-image: linear-gradient(rgba(20,44,32,.66), rgba(20,44,32,.72)), url("images/top.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}

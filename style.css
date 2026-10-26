@@ -20,3 +20,6 @@ nav{display:flex;gap:7px;overflow:auto;padding:4px 0 13px;margin-bottom:10px}nav
 .ingredient-row .qtybuttons button{min-width:28px;height:28px;border:1px solid var(--line);border-radius:7px;background:var(--cream);color:var(--ink);cursor:pointer}
 .ingredient-row.unavailable{opacity:.5}
 .ingredient-row .qtycount{min-width:14px;text-align:center}
+
+/* TEST mode: retains existing palette and layout */
+.test-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:15px 0 5px}.test-toolbar .btn{white-space:nowrap}.test-toolbar .btn.test-active{background:#f1e3bb;border-color:var(--gold);color:var(--ink)}body.test-mode header{border-bottom-color:#e0bc65}body.test-mode .test-toolbar{border-left:3px solid var(--gold);padding-left:10px}

@@ -23,3 +23,11 @@ nav{display:flex;gap:7px;overflow:auto;padding:4px 0 13px;margin-bottom:10px}nav
 
 /* TEST mode: retains existing palette and layout */
 .test-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:15px 0 5px}.test-toolbar .btn{white-space:nowrap}.test-toolbar .btn.test-active{background:#f1e3bb;border-color:var(--gold);color:var(--ink)}body.test-mode header{border-bottom-color:#e0bc65}body.test-mode .test-toolbar{border-left:3px solid var(--gold);padding-left:10px}
+
+/* タイトル背景。既存の文字色と余白は保持 */
+header{background-image:linear-gradient(90deg,rgba(20,44,32,.80),rgba(28,55,39,.54),rgba(20,44,32,.80)),url("images/top.png");background-color:#243b31;background-size:cover;background-position:center center;background-repeat:no-repeat}
+/* 図鑑・所持品の標本写真。画像がない場合は絵文字に戻す */
+.specimen{position:relative;overflow:hidden}
+.specimen img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:1}
+.specimen img[hidden]{display:none!important}
+.specimen-fallback{position:relative;z-index:0}

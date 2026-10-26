@@ -79,7 +79,33 @@ function craft(recipe){if(lessonLimitReached()){showResult('本日の授業は�
  else{record('調合失敗：素材を消費した',{lesson:'薬草調合',first:false,ingredients:{...recipe}});showResult('<h2>調合失敗</h2><p>魔力の定着に失敗しました。使用した素材はすべて消費されました。</p>')}
  selected={};save();renderCraft();renderInventory();renderCatalog();renderRecords();renderDailyLimit();
 }
-function itemCard(i,locked=false){let n=state.inventory[i.id]||0,secret=+i.id>=56,hide=locked&&secret;return `<article class="item ${locked?'locked':''}"><div class="itemhead"><div class="specimen">${locked?'❔':+i.id>=46?'⚗️':+i.id>=36?'🧪':'🌿'}</div><div><div class="num">NO. ${i.id}</div><h3>${locked?'？？？':i.name}</h3><span class="tag">${locked?'未発見':i.category}</span>${!locked?`<span class="tag gold">${i.rarity}</span>`:''}</div></div><p>${locked?(hide?'未知の特殊薬。自由調合で発見しましょう。':'まだ図鑑に登録されていません。'):i.description}</p>${!locked?`<div class="count">所持数：${n}</div>`:''}</article>`}
+// 図鑑の画像: game-data.js の image 指定が優先。未指定なら images/001.png のようにIDから取得。
+// 画像が存在しない場合は従来の絵文字へ自動的に切り替える。
+function imagePath(item){
+  if (item.image === false || item.image === null) return '';
+  return typeof item.image === 'string' ? item.image : `images/${item.id}.png`;
+}
+function specimenHTML(item, locked=false){
+  const icon = locked ? '❔' : +item.id>=46 ? '⚗️' : +item.id>=36 ? '🧪' : '🌿';
+  if (locked) return `<div class="specimen">${icon}</div>`;
+  const path=imagePath(item);
+  if (!path) return `<div class="specimen">${icon}</div>`;
+  // パスは編集者用データに限定しているが、属性内の特殊文字はエスケープする。
+  const safe=path.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return `<div class="specimen"><img src="${safe}" alt="${item.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;')}の画像" loading="lazy" onerror="this.hidden=true" /><span class="specimen-fallback">${icon}</span></div>`;
+}
+function itemCard(i,locked=false){
+  const n=state.inventory[i.id]||0,secret=+i.id>=56,hide=locked&&secret;
+  return `<article class="item ${locked?'locked':''}">
+    <div class="itemhead">${specimenHTML(i,locked)}<div>
+      <div class="num">NO. ${i.id}</div><h3>${locked?'？？？':i.name}</h3>
+      <span class="tag">${locked?'未発見':i.category}</span>
+      ${!locked?`<span class="tag gold">${i.rarity}</span>`:''}
+    </div></div>
+    <p>${locked?(hide?'未知の特殊薬。自由調合で発見しましょう。':'まだ図鑑に登録されていません。'):i.description}</p>
+    ${!locked?`<div class="count">所持数：${n}</div>`:''}
+  </article>`;
+}
 function renderInventory(){let cat=document.getElementById('invCategory').value,q=document.getElementById('invSearch').value.toLowerCase();let list=ITEMS.filter(i=>(state.inventory[i.id]||0)>0&&(!cat||cat===i.category)&&i.name.toLowerCase().includes(q));document.getElementById('inventoryGrid').innerHTML=list.length?list.map(i=>itemCard(i)).join(''):'<div class="empty">まだ所持しているアイテムがありません。</div>'}
 function renderCatalog(){let cat=document.getElementById('catCategory').value,q=document.getElementById('catSearch').value.toLowerCase(),status=document.getElementById('catStatus').value;let list=ITEMS.filter(i=>(!cat||i.category===cat)&&(status==='all'||(status==='found')===state.found.includes(i.id))&&(i.name.toLowerCase().includes(q)||i.id.includes(q)));document.getElementById('catalogGrid').innerHTML=list.map(i=>itemCard(i,!state.found.includes(i.id))).join('')||'<div class="empty">該当するアイテムはありません。</div>'}
 function renderRecords(){document.getElementById('recordSummary').innerHTML=`授業回数：${state.lessons}回<br>図鑑：${state.found.length} / 60 種類<br>調合薬の発見：${state.found.filter(id=>+id>=46).length} / 15 種類`;document.getElementById('recordList').innerHTML=state.history.length?state.history.map(h=>`<div class="item" style="margin-top:8px"><strong>${h.text||'過去の授業記録'}</strong><div class="muted">${h.time||''} · ${h.lesson||''}</div>${h.ingredients?`<p class="muted">使用した素材：${recipeNames(h.ingredients)}</p>`:''}</div>`).join(''):'<div class="empty">まだ研究記録はありません。</div>'}

@@ -1,269 +1,83 @@
-// アステル教授の植物学実習帳 — ゲーム本体。図鑑60種、探索、所持品、セーブを管理します。
-const ITEMS = [{"id": "001", "name": "ローズマリー", "category": "実在植物ベース", "rarity": "★", "lesson": "温室実習", "description": "ローズマリーの葉。香りの強い常緑性の植物で、学院では香油や調合薬の研究材料として扱われる。", "condition": "温室で葉を観察する"}, {"id": "002", "name": "カモミール", "category": "実在植物ベース", "rarity": "★", "lesson": "温室実習", "description": "白い花弁と黄色い中心を持つ花。乾燥させた花の香りや状態を観察する。", "condition": "花壇で花を採取する"}, {"id": "003", "name": "ラベンダー", "category": "実在植物ベース", "rarity": "★", "lesson": "温室実習", "description": "紫色の花穂と特徴的な香りを持つ植物。香りの成分を調べる実習に使われる。", "condition": "香りを調べる"}, {"id": "004", "name": "ミント", "category": "実在植物ベース", "rarity": "★", "lesson": "温室実習", "description": "清涼感のある香りを持つ葉。葉の形や香りの違いを比べる観察対象。", "condition": "葉の形を観察する"}, {"id": "005", "name": "セージ", "category": "実在植物ベース", "rarity": "★", "lesson": "温室実習", "description": "表面に細かな毛のある葉を持つ植物。葉の質感や乾燥後の変化を調べる。", "condition": "葉の表面を調べる"}, {"id": "006", "name": "タイム", "category": "実在植物ベース", "rarity": "★", "lesson": "温室実習", "description": "小さな葉を持つ芳香性の植物。調合の基礎素材として登場する。", "condition": "薬草調合の授業を受ける"}, {"id": "007", "name": "レモンバーム", "category": "実在植物ベース", "rarity": "★★", "lesson": "温室実習", "description": "レモンに似た香りの葉を持つ植物。温室の隅で群生していることがある。", "condition": "温室の隅を探索する"}, {"id": "008", "name": "カレンデュラ", "category": "実在植物ベース", "rarity": "★★", "lesson": "温室実習", "description": "明るい色の花を咲かせる植物。花弁の色や形を記録する。", "condition": "花弁を観察する"}, {"id": "009", "name": "エキナセア", "category": "実在植物ベース", "rarity": "★★", "lesson": "野外調査", "description": "中央が盛り上がった花姿が特徴。野外の花壇で観察できる。", "condition": "野外調査を行う"}, {"id": "010", "name": "ヤロウ", "category": "実在植物ベース", "rarity": "★★", "lesson": "野外調査", "description": "細かく裂けた葉を持つ植物。学院の森の小道沿いで見つかる。", "condition": "森の小道を調べる"}, {"id": "011", "name": "ジャーマンアイリス", "category": "実在植物ベース", "rarity": "★★", "lesson": "野外調査", "description": "大きな花と発達した根茎を持つ植物。根の形を学ぶ教材になる。", "condition": "根茎を調査する"}, {"id": "012", "name": "ジンジャー", "category": "実在植物ベース", "rarity": "★★", "lesson": "野外調査", "description": "香りのある地下茎を利用する植物。根茎の標本を作る実習に登場する。", "condition": "根の標本を作る"}, {"id": "013", "name": "バレリアン", "category": "実在植物ベース", "rarity": "★★★", "lesson": "野外調査", "description": "独特の香りを持つ植物。湿り気のある土壌で生育環境を調べる。", "condition": "湿った土壌を調べる"}, {"id": "014", "name": "マンドレイク模型標本", "category": "伝承・教材", "rarity": "★★★", "lesson": "温室実習", "description": "伝承上のマンドレイクを模した安全な教材標本。根の形態を学ぶための模型。", "condition": "根の形を研究する"}, {"id": "015", "name": "アロエ", "category": "実在植物ベース", "rarity": "★★", "lesson": "温室実習", "description": "厚みのある葉に水分を蓄える植物。乾燥区画で葉の構造を観察する。", "condition": "乾燥区画を探索する"}, {"id": "016", "name": "月光花", "category": "幻想植物", "rarity": "★★★", "lesson": "温室実習", "description": "月明かりのような青白い光を放つ花。花弁に微細な魔力の流れが見られる。", "condition": "夜の温室を観察する"}, {"id": "017", "name": "星露草", "category": "幻想植物", "rarity": "★★★★", "lesson": "野外調査", "description": "夜明け前に葉先へ星屑のような露をつける。日が昇ると露は消えてしまう。", "condition": "夜明け前に露を調べる"}, {"id": "018", "name": "琥珀灯花", "category": "幻想植物", "rarity": "★★", "lesson": "温室実習", "description": "花弁の内側に琥珀色の光を灯す植物。光の強さが周囲の魔力に反応する。", "condition": "花弁の発光を観察する"}, {"id": "019", "name": "眠り苔", "category": "幻想植物", "rarity": "★★", "lesson": "野外調査", "description": "湿った石壁に広がる苔。触れずに観察すると、光がゆっくり明滅する。", "condition": "湿った石壁を調べる"}, {"id": "020", "name": "風鈴蔓", "category": "幻想植物", "rarity": "★★", "lesson": "野外調査", "description": "風に揺れると小さな鈴のような音を奏でる蔓植物。音の発生源を追う。", "condition": "音の鳴る蔓を追う"}, {"id": "021", "name": "銀葉樹の若芽", "category": "幻想植物", "rarity": "★★", "lesson": "野外調査", "description": "銀色がかった葉を持つ樹木の若芽。根元の土に微弱な魔力反応がある。", "condition": "木の根元を調べる"}, {"id": "022", "name": "雨待ち草", "category": "幻想植物", "rarity": "★★", "lesson": "野外調査", "description": "雨が近づくと葉を閉じる水辺の植物。湿度と葉の動きを記録する。", "condition": "水辺の区画を探索する"}, {"id": "023", "name": "蒼火茸", "category": "幻想植物", "rarity": "★★★", "lesson": "野外調査", "description": "暗所で青い光を帯びる茸。胞子を採取する際は風向きに注意が必要。", "condition": "暗い温室の奥を探索する"}, {"id": "024", "name": "鏡花", "category": "幻想植物", "rarity": "★★★", "lesson": "温室実習", "description": "花弁が鏡のように周囲の色を映す植物。角度によって模様が変わる。", "condition": "花弁の反射を調べる"}, {"id": "025", "name": "夢紡ぎ草", "category": "幻想植物", "rarity": "★★★", "lesson": "温室実習", "description": "葉脈が糸のような模様を描く植物。葉の模様を記録すると研究が進む。", "condition": "葉の模様を記録する"}, {"id": "026", "name": "時計花", "category": "幻想植物", "rarity": "★★★", "lesson": "温室実習", "description": "決まった時刻にだけ花を開く。開花時刻の記録が発見の鍵となる。", "condition": "開花時刻を観察する"}, {"id": "027", "name": "浮遊種子草", "category": "幻想植物", "rarity": "★★", "lesson": "野外調査", "description": "成熟した種子がふわりと浮かぶ植物。種子の動きを追って採取する。", "condition": "空中の種子を追う"}, {"id": "028", "name": "霜結晶花", "category": "幻想植物", "rarity": "★★★", "lesson": "野外調査", "description": "花弁の縁に霜のような結晶が育つ。冷涼な場所を好む。", "condition": "冷涼な区画を探索する"}, {"id": "029", "name": "紅蓮樹の実", "category": "幻想植物", "rarity": "★★★", "lesson": "野外調査", "description": "赤い光を内側に宿す木の実。熟すと表面に細い光の筋が浮かぶ。", "condition": "樹木の実を観察する"}, {"id": "030", "name": "薄明のシダ", "category": "幻想植物", "rarity": "★★", "lesson": "野外調査", "description": "薄暗い場所で青緑色に見えるシダ。日陰の生育環境を調べる。", "condition": "日陰を探索する"}, {"id": "031", "name": "影縫い蔓", "category": "幻想植物", "rarity": "★★★★", "lesson": "野外調査", "description": "影の境目に沿って伸びる蔓。光源の位置を変えると成長方向が変わる。", "condition": "植物の影を追う"}, {"id": "032", "name": "星喰い蕾", "category": "幻想植物", "rarity": "★★★★", "lesson": "野外調査", "description": "星明かりを吸い込むように輝く蕾。星露草の研究後に発見の手がかりが得られる。", "condition": "星露草の研究後に探索する"}, {"id": "033", "name": "深根の白花", "category": "幻想植物", "rarity": "★★★★", "lesson": "野外調査", "description": "地表には小さな白花しか見えないが、地下深くまで根を伸ばす。根脈感知で探す。", "condition": "根脈感知で根を調べる"}, {"id": "034", "name": "幽光の胞子花", "category": "幻想植物", "rarity": "★★★★", "lesson": "野外調査", "description": "蒼火茸の近くに稀に咲く胞子花。胞子の光は標本瓶の中でも弱く続く。", "condition": "蒼火茸の標本を持って探索する"}, {"id": "035", "name": "未分類の銀青花", "category": "幻想植物", "rarity": "★★★★★", "lesson": "野外調査", "description": "既存の分類に当てはまらない銀青色の花。複数の植物標本を集めると手がかりが得られる。", "condition": "特定の植物標本を集めて探索する"}, {"id": "036", "name": "月光花の花弁標本", "category": "採取素材・標本", "rarity": "★★★", "lesson": "温室実習", "description": "月光花から採取した花弁。暗所で淡い青白い光を放ち、内部に微弱な魔力反応がある。", "condition": "月光花の花弁を詳しく観察する"}, {"id": "037", "name": "星露草の朝露", "category": "採取素材・標本", "rarity": "★★★★", "lesson": "野外調査", "description": "星露草の葉先に生じる露。魔力を含むが、日の出後は急速に消失する。", "condition": "星露草から露を採取する"}, {"id": "038", "name": "魔力を帯びた土壌", "category": "採取素材・標本", "rarity": "★★★", "lesson": "温室実習", "description": "光る花の根元から採取した土壌標本。青白い微粒子と強い魔力反応が確認された。植物が魔力を吸収した痕跡か、土壌自体の性質かは未解明。", "condition": "光る花の根元の土と魔力を調べる"}, {"id": "039", "name": "琥珀色の樹液", "category": "採取素材・標本", "rarity": "★★", "lesson": "野外調査", "description": "樹皮から自然に滲み出た樹液。琥珀色で、保存するとゆっくり固まる。", "condition": "樹液を傷つけず採取する"}, {"id": "040", "name": "蒼火茸の胞子袋", "category": "採取素材・標本", "rarity": "★★★", "lesson": "野外調査", "description": "蒼火茸から採取した胞子袋。強い風を避けて慎重に扱う必要がある。", "condition": "蒼火茸を慎重に観察する"}, {"id": "041", "name": "浮遊種子の小瓶", "category": "採取素材・標本", "rarity": "★★", "lesson": "野外調査", "description": "浮遊種子草の種子を収めた小瓶。瓶を傾けると種子がゆっくり浮き上がる。", "condition": "浮遊種子草を追跡する"}, {"id": "042", "name": "霜結晶の欠片", "category": "採取素材・標本", "rarity": "★★★", "lesson": "野外調査", "description": "霜結晶花の縁にできる透明な欠片。室温では少しずつ水滴に戻る。", "condition": "霜結晶花を採取する"}, {"id": "043", "name": "深根の繊維", "category": "採取素材・標本", "rarity": "★★★★", "lesson": "野外調査", "description": "深根の白花から採取した細い繊維。微弱な魔力の流れを伝える性質がある。", "condition": "根脈感知で根を発見する"}, {"id": "044", "name": "鏡花の透明片", "category": "採取素材・標本", "rarity": "★★★", "lesson": "温室実習", "description": "鏡花から自然に落ちた透明な花弁片。周囲の色を淡く映し込む。", "condition": "鏡花の落花を採取する"}, {"id": "045", "name": "未知の種子", "category": "採取素材・標本", "rarity": "★★★★★", "lesson": "野外調査", "description": "正体不明の銀青花の近くで見つかった種子。既存の図鑑には一致する記録がない。", "condition": "未分類の銀青花の調査後に発見する"}, {"id": "046", "name": "薬草の芳香油", "category": "調合薬・香油", "rarity": "★", "lesson": "薬草調合", "description": "芳香性の薬草を用いた香油。植物ごとの香りの違いを比較する教材。", "condition": "授業用のローズマリーで調合（自分で発見した素材も使用可能）"}, {"id": "047", "name": "カモミールの香油", "category": "調合薬・香油", "rarity": "★", "lesson": "薬草調合", "description": "カモミールの香りを閉じ込めた香油。調合後も淡い花の香りが残る。", "condition": "授業用のカモミールで調合（自分で発見した素材も使用可能）"}, {"id": "048", "name": "清涼ミント液", "category": "調合薬・香油", "rarity": "★★", "lesson": "薬草調合", "description": "ミントの清涼感を抽出した学院内の実習用調合液。", "condition": "授業用のミントで調合（自分で発見した素材も使用可能）"}, {"id": "049", "name": "琥珀色の保存液", "category": "調合薬・香油", "rarity": "★★", "lesson": "薬草調合", "description": "採取した標本の状態を保つための架空の保存液。琥珀色に透き通る。", "condition": "琥珀色の樹液を採取して調合"}, {"id": "050", "name": "微光の観察液", "category": "調合薬・香油", "rarity": "★★★", "lesson": "薬草調合", "description": "魔力植物の発光反応を観察しやすくする研究用の液体。", "condition": "琥珀灯花を研究して調合"}, {"id": "051", "name": "星露の魔力溶液", "category": "調合薬・香油", "rarity": "★★★★", "lesson": "薬草調合", "description": "星露草の朝露を用いた研究用溶液。淡い星形の光が瓶の中に浮かぶ。", "condition": "星露草の朝露を採取して調合"}, {"id": "052", "name": "霜結晶の冷却薬", "category": "調合薬・香油", "rarity": "★★★", "lesson": "薬草調合", "description": "霜結晶の欠片を用いた架空の冷却用調合品。瓶の表面に薄い霜がつく。", "condition": "霜結晶の欠片を採取して調合"}, {"id": "053", "name": "夢紡ぎの芳香瓶", "category": "調合薬・香油", "rarity": "★★★", "lesson": "薬草調合", "description": "夢紡ぎ草の香りを封じた小瓶。開封すると草花のような穏やかな香りが広がる。", "condition": "夢紡ぎ草を発見して調合"}, {"id": "054", "name": "根脈の反応液", "category": "調合薬・香油", "rarity": "★★★★", "lesson": "薬草調合", "description": "根の周囲にある魔力反応を記録するための研究用試薬。", "condition": "深根の繊維を採取して調合"}, {"id": "055", "name": "未知植物の抽出液", "category": "調合薬・香油", "rarity": "★★★★★", "lesson": "薬草調合", "description": "未知の銀青花から得られた抽出液。性質は未解明で、慎重な観察が必要。", "condition": "未分類植物の研究を進めて調合"}, {"id": "056", "name": "教授の温室観察ノート", "category": "研究記録・特別な発見", "rarity": "★", "lesson": "研究記録", "description": "温室での観察を記したノート。植物の葉や花の細かな違いがスケッチされている。", "condition": "温室実習を3回受ける"}, {"id": "057", "name": "薬草調合の初級記録", "category": "研究記録・特別な発見", "rarity": "★★", "lesson": "研究記録", "description": "薬草を組み合わせたときの香りや色の変化を記録した初級研究資料。", "condition": "調合品を3種類発見する"}, {"id": "058", "name": "根脈の研究記録", "category": "研究記録・特別な発見", "rarity": "★★★★", "lesson": "研究記録", "description": "地下の根と魔力の流れについて記した研究資料。複数の根素材の比較が必要。", "condition": "根に関する素材を3種類発見する"}, {"id": "059", "name": "未分類植物の研究日誌", "category": "研究記録・特別な発見", "rarity": "★★★★★", "lesson": "研究記録", "description": "未分類の銀青花を中心に、既存の分類では説明できない特徴をまとめた日誌。", "condition": "未分類の銀青花を発見する"}, {"id": "060", "name": "アステル教授の特別講義録", "category": "研究記録・特別な発見", "rarity": "★★★★★", "lesson": "研究記録", "description": "植物学実習図鑑を完成させた者に贈られる特別講義録。教授の手書きの祝辞が添えられている。", "condition": "図鑑を100％完成させる"}];
-const METHODS = {
- "温室実習":[
-  {id:"observe",title:"花や葉を詳しく観察する",desc:"花弁・葉・香りなど、目の前の特徴を記録する。",cats:["実在植物ベース","幻想植物","採取素材・標本"]},
-  {id:"soil",title:"根元の土と魔力を調べる",desc:"土壌や根の周囲にある魔力の流れを探す。",cats:["幻想植物","採取素材・標本"]},
-  {id:"environment",title:"植物の生育環境を比較する",desc:"日当たりや湿度の違いが植物に与える影響を調べる。",cats:["実在植物ベース","幻想植物"]},
-  {id:"measure",title:"魔力の反応を測定する",desc:"専用の観測器具で植物が示す魔力反応を記録する。",cats:["幻想植物","採取素材・標本"]}
- ],
-  "薬草調合":[
-   {id:"compare",title:"薬草の香りを抽出する",desc:"支給された薬草から香りを抽出し、香油を仕上げる。",cats:["調合薬・香油"]},
-   {id:"mix",title:"薬草を組み合わせて調合する",desc:"薬草を配合し、研究用の調合液を完成させる。",cats:["調合薬・香油"]},
-   {id:"preserve",title:"標本用の保存液を作る",desc:"植物素材を安定させるための保存・冷却液を調合する。",cats:["調合薬・香油"]},
-   {id:"analyze",title:"魔力を利用した調合を行う",desc:"希少素材を使い、魔力を帯びた試薬や溶液を作る。",cats:["調合薬・香油"]}
-  ],
- "野外調査":[
-  {id:"track",title:"地面や根の痕跡をたどる",desc:"土の盛り上がりや根の伸び方から植物の存在を探る。",cats:["実在植物ベース","幻想植物","採取素材・標本"]},
-  {id:"water",title:"水辺や木陰を調査する",desc:"植物が生育しやすい場所を探して観察する。",cats:["実在植物ベース","幻想植物"]},
-  {id:"root",title:"周囲の魔力の流れを調べる",desc:"地面や植物の周囲にある魔力反応を測定する。",cats:["幻想植物","採取素材・標本"]},
-  {id:"rare",title:"珍しい植物の特徴を記録する",desc:"植物の形状や色、生育場所を記録して分類する。",cats:["幻想植物","採取素材・標本","研究記録・特別な発見"]}
- ]
-};
-
-// ================================================
-// 追加: 基本薬10種・特殊薬5種
-// 既存60種のIDに対応。特殊薬のレシピは発見前非公開。
-// ================================================
-const BASIC_POTIONS=[
- {id:"P01",name:"薬草の安らぎ水",level:1,recipe:{"002":2,"007":1},desc:"緊張を和らげる淡緑色の薬液。"},
- {id:"P02",name:"まどろみの香油",level:1,recipe:{"003":2,"019":1},desc:"穏やかな睡眠を助ける淡紫色の香油。"},
- {id:"P03",name:"冷感ミント液",level:1,recipe:{"004":2},desc:"器具を冷ますための透明な冷却液。水は常備品。"},
- {id:"P04",name:"活力の薬液",level:1,recipe:{"001":1,"005":1,"009":1},desc:"体調維持を補助する琥珀色の薬液。"},
- {id:"P05",name:"琥珀保存液",level:1,recipe:{"039":1,"005":1},desc:"標本の保存に使う黄金色の液。"},
- {id:"P06",name:"発光観察液",level:2,recipe:{"040":1,"037":1},desc:"光る反応を観察する研究液。"},
- {id:"P07",name:"魔力定着液",level:2,recipe:{"037":1,"039":1,"038":1},desc:"魔力を安定させる銀青色の液体。"},
- {id:"P08",name:"霜結晶の冷却薬",level:2,recipe:{"042":2,"004":1},desc:"熱を吸収する冷却薬。"},
- {id:"P09",name:"夢紡ぎの香瓶",level:2,recipe:{"019":1,"003":1,"037":1},desc:"穏やかな夢を助ける香瓶。"},
- {id:"P10",name:"しびれ毒",level:3,recipe:{"031":1,"040":1,"045":1},desc:"魔法世界の毒性研究用の架空の薬。"}
-];
-const SPECIAL_POTIONS=[
- {id:"P11",name:"心華の雫",clue:"鮮やかな花弁と、光を宿す花、夜明けの露が鍵です。",recipe:{"008":1,"016":1,"037":1},desc:"淡い薔薇色に輝く、気分や感覚を高める薬液。相手の意思は変えない。"},
- {id:"P12",name:"幻惑の滴",clue:"薄明のシダと、光を反射する素材、青い胞子を組み合わせる。",recipe:{"030":1,"044":1,"040":1},desc:"光や音の知覚を一時的に変化させる暗紫色の薬液。"},
- {id:"P13",name:"解毒の霊薬",clue:"野外の薬草を二種類、琥珀色の樹液と調合する。",recipe:{"010":1,"009":1,"039":1},desc:"毒や状態異常の回復を研究する深緑色の薬液。"},
- {id:"P14",name:"浮遊の秘薬",clue:"浮かぶ種子と、星露、保存できる樹液に着目する。",recipe:{"041":1,"037":1,"039":1},desc:"小さな物体を一時的に軽くする浮遊補助薬。"},
- {id:"P15",name:"未知植物の精髄",clue:"未知の銀青花、その種子、星露と樹液を合わせる。",recipe:{"035":1,"045":1,"037":1,"039":1},desc:"植物の魔力を増幅する銀青色の希少な薬液。"}
-];
-const ALL_POTIONS=[...BASIC_POTIONS,...SPECIAL_POTIONS];
-const itemById=id=>ITEMS.find(i=>i.id===id);
-const itemLabel=id=>itemById(id)?.name||id;
-const recipeText=recipe=>Object.entries(recipe).map(([id,n])=>`${itemLabel(id)} ×${n}`).join(" / ");
-let chosenIngredients={};
-function ensurePotionState(){
- state.potionInventory ||= {};
- state.learnedRecipes ||= [];
- state.potionHistory ||= [];
-}
-function renderPotionRoom(){
- ensurePotionState();
- const choices=document.getElementById("ingredientChoices");
- if(!choices)return;
- choices.innerHTML=ITEMS.filter(i=>+i.id<=45).filter(i=>(state.inventory[i.id]||0)>0).map(i=>{
-  const n=chosenIngredients[i.id]||0,have=state.inventory[i.id];
-  return `<div class="ingredient-row"><span>${i.name}<small class="muted"> (所持 ${have})</small></span><span class="qty-control"><button data-ingredient="${i.id}" data-delta="-1" ${n<=0?'disabled':''} aria-label="${i.name}を減らす">−</button><span class="qty">${n}</span><button data-ingredient="${i.id}" data-delta="1" ${n>=have?'disabled':''} aria-label="${i.name}を増やす">＋</button></span></div>`;
- }).join("")||'<div class="empty">素材を持っていません。温室実習か野外調査で採取しましょう。</div>';
- choices.querySelectorAll("[data-ingredient]").forEach(b=>b.addEventListener("click",()=>{
-  const id=b.dataset.ingredient;
-  chosenIngredients[id]=Math.max(0,Math.min(state.inventory[id]||0,(chosenIngredients[id]||0)+Number(b.dataset.delta)));
-  if(!chosenIngredients[id])delete chosenIngredients[id];
-  renderPotionRoom();
- }));
- const selection=document.getElementById("ingredientSummary");
- selection.textContent=Object.keys(chosenIngredients).length?`選択中：${recipeText(chosenIngredients)}`:"素材を選択してください。";
- document.getElementById("craftBtn").disabled=getDailyCount()>=DAILY_LIMIT;
- const grid=document.getElementById("recipeGrid");
- grid.innerHTML=ALL_POTIONS.map(p=>{
-  const learned=state.learnedRecipes.includes(p.id),special=SPECIAL_POTIONS.some(x=>x.id===p.id);
-  const canMake=learned&&Object.entries(p.recipe).every(([id,n])=>(state.inventory[id]||0)>=n);
-  return `<article class="item recipe-card"><div class="num">${p.id} · ${special?'特殊薬':`基本薬 Lv.${p.level}`}</div><h3>${special&&!learned?'？？？':p.name}</h3><p>${special&&!learned?p.clue:p.desc}</p><p class="muted">${special&&!learned?'未発見のため配合は非公開':`材料：${recipeText(p.recipe)}`}</p>${learned?'<span class="tag gold">レシピ発見済み</span>':'<span class="tag">未発見</span>'}${learned?`<div class="actions"><button class="btn secondary" data-recraft="${p.id}" ${canMake&&getDailyCount()<DAILY_LIMIT?'':'disabled'}>再調合する</button></div>`:''}</article>`;
- }).join("");
- grid.querySelectorAll("[data-recraft]").forEach(b=>b.addEventListener("click",()=>craftPotion(ALL_POTIONS.find(p=>p.id===b.dataset.recraft).recipe)));
- document.getElementById("potionInventory").innerHTML=ALL_POTIONS.filter(p=>(state.potionInventory[p.id]||0)>0).map(p=>`<div class="item"><h3>⚗️ ${p.name}</h3><p>${p.desc}</p><div class="count">所持数：${state.potionInventory[p.id]}</div></div>`).join("")||'<div class="empty">完成した薬はまだありません。</div>';
-}
-function craftPotion(ingredients=chosenIngredients){
- ensurePotionState();
- const result=document.getElementById("craftResult");
- const show=(message)=>{result.classList.remove("hidden");result.textContent=message};
- if(getDailyCount()>=DAILY_LIMIT){renderDailyLimit();show("本日の授業は3回終了しています。また明日調合してください。");return;}
- const entries=Object.entries(ingredients).filter(([,n])=>n>0);
- if(!entries.length){show("素材を1つ以上選択してください。");return;}
- if(entries.some(([id,n])=>!Number.isInteger(n)||n<1||(state.inventory[id]||0)<n)){show("素材が不足しています。所持品を確認してください。");renderPotionRoom();return;}
- // 配合が完全一致した場合のみ成功。失敗時は素材を消費しないが授業を1回消費。
- const potion=ALL_POTIONS.find(p=>Object.keys(p.recipe).length===entries.length&&entries.every(([id,n])=>p.recipe[id]===n));
- setDailyCount(getDailyCount()+1);
- state.lessons++;
- state.lessonCounts["薬草調合"]=(state.lessonCounts["薬草調合"]||0)+1;
- if(potion){
-  for(const [id,n] of entries)state.inventory[id]-=n;
-  state.potionInventory[potion.id]=(state.potionInventory[potion.id]||0)+1;
-  const first=!state.learnedRecipes.includes(potion.id);
-  if(first)state.learnedRecipes.push(potion.id);
-  state.potionHistory.unshift({date:new Date().toLocaleString("ja-JP"),message:`${potion.name}を${first?'初めて完成・レシピ発見':'再調合'}した`});
-  show(`${first?'✨ 新しいレシピを発見！':'⚗️ 調合成功！'} ${potion.name}を1個入手しました。${first?'以後、レシピ帳から再調合できます。':''}`);
- }else{
-  state.potionHistory.unshift({date:new Date().toLocaleString("ja-JP"),message:"調合を試みたが完成しなかった"});
-  show("調合に失敗しました。素材は返却されますが、授業回数は1回消費します。組み合わせと個数を見直しましょう。");
- }
- state.potionHistory=state.potionHistory.slice(0,80);
- chosenIngredients={};
- save();renderInventory();renderCatalog();renderRecords();renderPotionRoom();renderDailyLimit();
-}
-document.getElementById("craftBtn").addEventListener("click",()=>craftPotion());
-document.getElementById("clearIngredients").addEventListener("click",()=>{chosenIngredients={};renderPotionRoom()});
-
-const STORAGE="asterBotanicalJournal_v2";
+// アステル教授の植物学実習帳 — 採取45種類・調合薬15種類
+const ITEMS = [{"id":"001","name":"ローズマリー","category":"実在植物ベース","rarity":"★","lesson":"温室実習・野外調査","description":"ローズマリーの葉。香りの強い常緑性の植物で、学院では香油や調合薬の研究材料として扱われる。","condition":"温室実習・野外調査で採取可能"},{"id":"002","name":"カモミール","category":"実在植物ベース","rarity":"★","lesson":"温室実習・野外調査","description":"白い花弁と黄色い中心を持つ花。乾燥させた花の香りや状態を観察する。","condition":"温室実習・野外調査で採取可能"},{"id":"003","name":"ラベンダー","category":"実在植物ベース","rarity":"★","lesson":"温室実習・野外調査","description":"紫色の花穂と特徴的な香りを持つ植物。香りの成分を調べる実習に使われる。","condition":"温室実習・野外調査で採取可能"},{"id":"004","name":"ミント","category":"実在植物ベース","rarity":"★","lesson":"温室実習・野外調査","description":"清涼感のある香りを持つ葉。葉の形や香りの違いを比べる観察対象。","condition":"温室実習・野外調査で採取可能"},{"id":"005","name":"セージ","category":"実在植物ベース","rarity":"★","lesson":"温室実習・野外調査","description":"表面に細かな毛のある葉を持つ植物。葉の質感や乾燥後の変化を調べる。","condition":"温室実習・野外調査で採取可能"},{"id":"006","name":"タイム","category":"実在植物ベース","rarity":"★","lesson":"温室実習・野外調査","description":"小さな葉を持つ芳香性の植物。調合の基礎素材として登場する。","condition":"温室実習・野外調査で採取可能"},{"id":"007","name":"レモンバーム","category":"実在植物ベース","rarity":"★","lesson":"温室実習・野外調査","description":"レモンに似た香りの葉を持つ植物。温室の隅で群生していることがある。","condition":"温室実習・野外調査で採取可能"},{"id":"008","name":"カレンデュラ","category":"実在植物ベース","rarity":"★","lesson":"温室実習・野外調査","description":"明るい色の花を咲かせる植物。花弁の色や形を記録する。","condition":"温室実習・野外調査で採取可能"},{"id":"009","name":"エキナセア","category":"実在植物ベース","rarity":"★★","lesson":"温室実習・野外調査","description":"中央が盛り上がった花姿が特徴。野外の花壇で観察できる。","condition":"温室実習・野外調査で採取可能"},{"id":"010","name":"セイヨウノコギリソウ","category":"幻想植物","rarity":"★","lesson":"野外調査","description":"細かく裂けた葉と小さな白い花を持つ野外の薬草。","condition":"野外調査限定"},{"id":"011","name":"レモンバーベナ","category":"実在植物ベース","rarity":"★★","lesson":"温室実習・野外調査","description":"柑橘系の香りを放つ細長い葉が特徴。","condition":"温室実習・野外調査で採取可能"},{"id":"012","name":"クルマバソウ","category":"実在植物ベース","rarity":"★★","lesson":"温室実習・野外調査","description":"輪生する葉と小さな白い花を持つ。","condition":"温室実習・野外調査で採取可能"},{"id":"013","name":"リンドウ","category":"実在植物ベース","rarity":"★★","lesson":"温室実習・野外調査","description":"青紫の花を咲かせる薬草。","condition":"温室実習・野外調査で採取可能"},{"id":"014","name":"白花薬草","category":"実在植物ベース","rarity":"★★","lesson":"温室実習・野外調査","description":"白い花をつける幻想薬草。","condition":"温室実習・野外調査で採取可能"},{"id":"015","name":"薄紅の硝子花","category":"幻想植物","rarity":"★★★","lesson":"温室実習・野外調査","description":"薄紅色の透明な花弁を持つ。魔力に反応して淡く光る。","condition":"温室実習・野外調査で採取可能"},{"id":"016","name":"月光花","category":"幻想植物","rarity":"★★★","lesson":"温室実習・野外調査","description":"月明かりのような青白い光を放つ花。花弁に微細な魔力の流れが見られる。","condition":"温室実習・野外調査で採取可能"},{"id":"017","name":"星露草","category":"幻想植物","rarity":"★★★★","lesson":"野外調査","description":"夜明け前に葉先へ星屑のような露をつける。日が昇ると露は消えてしまう。","condition":"野外調査限定"},{"id":"018","name":"琥珀灯花","category":"幻想植物","rarity":"★★","lesson":"野外調査","description":"花弁の内側に琥珀色の光を灯す植物。光の強さが周囲の魔力に反応する。","condition":"野外調査限定"},{"id":"019","name":"眠り苔","category":"幻想植物","rarity":"★★","lesson":"野外調査","description":"湿った石壁に広がる苔。触れずに観察すると、光がゆっくり明滅する。","condition":"野外調査限定"},{"id":"020","name":"風鈴蔓","category":"幻想植物","rarity":"★★","lesson":"野外調査","description":"風に揺れると小さな鈴のような音を奏でる蔓植物。音の発生源を追う。","condition":"野外調査限定"},{"id":"021","name":"銀葉樹の若芽","category":"幻想植物","rarity":"★★★","lesson":"野外調査","description":"銀色がかった葉を持つ樹木の若芽。根元の土に微弱な魔力反応がある。","condition":"野外調査限定"},{"id":"022","name":"雨待ち草","category":"幻想植物","rarity":"★★","lesson":"野外調査","description":"雨が近づくと葉を閉じる水辺の植物。湿度と葉の動きを記録する。","condition":"野外調査限定"},{"id":"023","name":"蒼火茸","category":"幻想植物","rarity":"★★★","lesson":"野外調査","description":"暗所で青い光を帯びる茸。胞子を採取する際は風向きに注意が必要。","condition":"野外調査限定"},{"id":"024","name":"鏡花","category":"幻想植物","rarity":"★★★","lesson":"野外調査","description":"花弁が鏡のように周囲の色を映す植物。角度によって模様が変わる。","condition":"野外調査限定"},{"id":"025","name":"夢紡ぎ草","category":"幻想植物","rarity":"★★★","lesson":"野外調査","description":"葉脈が糸のような模様を描く植物。葉の模様を記録すると研究が進む。","condition":"野外調査限定"},{"id":"026","name":"時計花","category":"幻想植物","rarity":"★★★","lesson":"野外調査","description":"決まった時刻にだけ花を開く。開花時刻の記録が発見の鍵となる。","condition":"野外調査限定"},{"id":"027","name":"浮遊種子草","category":"幻想植物","rarity":"★★★","lesson":"野外調査","description":"成熟した種子がふわりと浮かぶ植物。種子の動きを追って採取する。","condition":"野外調査限定"},{"id":"028","name":"霜結晶花","category":"幻想植物","rarity":"★★★","lesson":"野外調査","description":"花弁の縁に霜のような結晶が育つ。冷涼な場所を好む。","condition":"野外調査限定"},{"id":"029","name":"紅蓮樹の実","category":"幻想植物","rarity":"★★★","lesson":"野外調査","description":"赤い光を内側に宿す木の実。熟すと表面に細い光の筋が浮かぶ。","condition":"野外調査限定"},{"id":"030","name":"薄明のシダ","category":"幻想植物","rarity":"★★","lesson":"野外調査","description":"薄暗い場所で青緑色に見えるシダ。日陰の生育環境を調べる。","condition":"野外調査限定"},{"id":"031","name":"影縫い蔓","category":"幻想植物","rarity":"★★★★","lesson":"野外調査","description":"影の境目に沿って伸びる蔓。光源の位置を変えると成長方向が変わる。","condition":"野外調査限定"},{"id":"032","name":"星喰い蕾","category":"幻想植物","rarity":"★★★★","lesson":"野外調査","description":"星明かりを吸い込むように輝く蕾。星露草の研究後に発見の手がかりが得られる。","condition":"野外調査限定"},{"id":"033","name":"深根の白花","category":"幻想植物","rarity":"★★★★","lesson":"野外調査","description":"地表には小さな白花しか見えないが、地下深くまで根を伸ばす。根脈感知で探す。","condition":"野外調査限定"},{"id":"034","name":"幽光の胞子花","category":"幻想植物","rarity":"★★★★","lesson":"野外調査","description":"蒼火茸の近くに稀に咲く胞子花。胞子の光は標本瓶の中でも弱く続く。","condition":"野外調査限定"},{"id":"035","name":"未分類の銀青花","category":"幻想植物","rarity":"★★★★★","lesson":"野外調査","description":"既存の分類に当てはまらない銀青色の花。複数の植物標本を集めると手がかりが得られる。","condition":"野外調査限定"},{"id":"036","name":"月光花の花弁標本","category":"採取素材・標本","rarity":"★★★","lesson":"温室実習・野外調査","description":"月光花から採取した花弁。暗所で淡い青白い光を放ち、内部に微弱な魔力反応がある。","condition":"温室実習・野外調査で採取可能"},{"id":"037","name":"星露草の朝露","category":"採取素材・標本","rarity":"★★★★","lesson":"野外調査","description":"星露草の葉先に生じる露。魔力を含むが、日の出後は急速に消失する。","condition":"野外調査限定"},{"id":"038","name":"魔力を帯びた土壌","category":"採取素材・標本","rarity":"★★★","lesson":"温室実習・野外調査","description":"光る花の根元から採取した土壌標本。青白い微粒子と強い魔力反応が確認された。植物が魔力を吸収した痕跡か、土壌自体の性質かは未解明。","condition":"温室実習・野外調査で採取可能"},{"id":"039","name":"琥珀樹脂","category":"採取素材・標本","rarity":"★★","lesson":"温室実習・野外調査","description":"標本の保存に使われる黄金色の樹脂。","condition":"温室実習・野外調査で採取可能"},{"id":"040","name":"蒼火茸の胞子嚢","category":"採取素材・標本","rarity":"★★★","lesson":"野外調査","description":"蒼火茸由来の光る胞子を密閉した研究素材。","condition":"野外調査限定"},{"id":"041","name":"浮遊種子の小瓶","category":"採取素材・標本","rarity":"★★★","lesson":"野外調査","description":"浮遊種子草の種子を収めた小瓶。瓶を傾けると種子がゆっくり浮き上がる。","condition":"野外調査限定"},{"id":"042","name":"霜結晶の欠片","category":"採取素材・標本","rarity":"★★★","lesson":"温室実習・野外調査","description":"霜結晶花の縁にできる透明な欠片。室温では少しずつ水滴に戻る。","condition":"温室実習・野外調査で採取可能"},{"id":"043","name":"深根繊維","category":"採取素材・標本","rarity":"★★★★","lesson":"野外調査","description":"深根の白花から得られる魔力を伝える繊維。","condition":"野外調査限定"},{"id":"044","name":"鏡花の透明片","category":"採取素材・標本","rarity":"★★★","lesson":"温室実習・野外調査","description":"鏡花から自然に落ちた透明な花弁片。周囲の色を淡く映し込む。","condition":"温室実習・野外調査で採取可能"},{"id":"045","name":"未知の種子","category":"採取素材・標本","rarity":"★★★★★","lesson":"野外調査","description":"正体不明の銀青花の近くで見つかった種子。既存の図鑑には一致する記録がない。","condition":"野外調査限定"},{"id":"046","name":"薬草の安らぎ水","category":"調合薬・香油","rarity":"★","lesson":"薬草調合","description":"初級の研究用調合薬。","condition":"カモミールを初発見するとレシピ解放"},{"id":"047","name":"まどろみの香油","category":"調合薬・香油","rarity":"★","lesson":"薬草調合","description":"初級の研究用調合薬。","condition":"ラベンダーを初発見するとレシピ解放"},{"id":"048","name":"冷感ミント液","category":"調合薬・香油","rarity":"★","lesson":"薬草調合","description":"初級の研究用調合薬。","condition":"ミントを初発見するとレシピ解放"},{"id":"049","name":"活力の薬液","category":"調合薬・香油","rarity":"★","lesson":"薬草調合","description":"初級の研究用調合薬。","condition":"ローズマリーを初発見するとレシピ解放"},{"id":"050","name":"琥珀保存液","category":"調合薬・香油","rarity":"★","lesson":"薬草調合","description":"初級の研究用調合薬。","condition":"琥珀樹脂を初発見するとレシピ解放"},{"id":"051","name":"発光観察液","category":"調合薬・香油","rarity":"★★★","lesson":"薬草調合","description":"中級の研究用調合薬。","condition":"蒼火茸の胞子嚢を初発見するとレシピ解放"},{"id":"052","name":"魔力定着液","category":"調合薬・香油","rarity":"★★★","lesson":"薬草調合","description":"中級の研究用調合薬。","condition":"星露草の朝露を初発見するとレシピ解放"},{"id":"053","name":"霜結晶の冷却薬","category":"調合薬・香油","rarity":"★★★","lesson":"薬草調合","description":"中級の研究用調合薬。","condition":"霜結晶の欠片を初発見するとレシピ解放"},{"id":"054","name":"夢紡ぎの香瓶","category":"調合薬・香油","rarity":"★★★","lesson":"薬草調合","description":"中級の研究用調合薬。","condition":"眠り苔を初発見するとレシピ解放"},{"id":"055","name":"しびれ毒","category":"調合薬・香油","rarity":"★★★★","lesson":"薬草調合","description":"上級の研究用調合薬。","condition":"影縫い蔓を初発見するとレシピ解放"},{"id":"056","name":"心華の雫","category":"調合薬・香油","rarity":"★★★★★","lesson":"薬草調合","description":"自由調合で発見できる秘密の調合薬。","condition":"自由調合で発見"},{"id":"057","name":"幻惑の滴","category":"調合薬・香油","rarity":"★★★★★","lesson":"薬草調合","description":"自由調合で発見できる秘密の調合薬。","condition":"自由調合で発見"},{"id":"058","name":"解毒の霊薬","category":"調合薬・香油","rarity":"★★★★★","lesson":"薬草調合","description":"自由調合で発見できる秘密の調合薬。","condition":"自由調合で発見"},{"id":"059","name":"浮遊の秘薬","category":"調合薬・香油","rarity":"★★★★★","lesson":"薬草調合","description":"自由調合で発見できる秘密の調合薬。","condition":"自由調合で発見"},{"id":"060","name":"未知植物の精髄","category":"調合薬・香油","rarity":"★★★★★","lesson":"薬草調合","description":"自由調合で発見できる秘密の調合薬。","condition":"自由調合で発見"}];
+const METHODS = {"温室実習":[{"id":"observe","title":"花や葉を詳しく観察する","desc":"花弁・葉・香りを観察する。","pool":["001","002","003","004","005","008","007","006","009","011","012","013","014","015","016","036"]},{"id":"soil","title":"根元の土と魔力を調べる","desc":"土壌や根元の魔力を調べる。","pool":["001","005","006","012","013","014","039","016","038","042"]},{"id":"environment","title":"植物の生育環境を比較する","desc":"日当たり・湿度の違いを調べる。","pool":["002","004","008","007","006","009","012","013","014","015","016","042"]},{"id":"measure","title":"魔力の反応を測定する","desc":"魔力の反応がある対象を探す。","pool":["014","039","015","016","036","038","042","044"]}],"野外調査":[{"id":"track","title":"地面や根の痕跡をたどる","desc":"根や蔓の痕跡を探す。","pool":["001","006","010","012","013","020","030","039","021","027","029","041","031","033","043","035"]},{"id":"water","title":"水辺や木陰を調査する","desc":"湿地や木陰の生物を探す。","pool":["002","004","007","010","012","013","019","022","030","023","024","025","028","040","044","042","017","037","034"]},{"id":"root","title":"周囲の魔力の流れを調べる","desc":"魔力を帯びた植物や素材を探す。","pool":["014","018","020","039","015","016","021","023","024","026","029","036","038","040","017","031","032","033","034","043","035","045"]},{"id":"rare","title":"珍しい植物の特徴を記録する","desc":"希少な植物の特徴を記録する。","pool":["003","005","008","006","009","011","014","018","022","015","016","024","025","026","027","028","041","017","031","032","034","037","035","045"]}]};
+const POTIONS = [{"id":"046","name":"薬草の安らぎ水","level":"初級","recipe":{"002":2,"007":1},"unlock":"002","hint":""},{"id":"047","name":"まどろみの香油","level":"初級","recipe":{"003":2,"019":1},"unlock":"003","hint":""},{"id":"048","name":"冷感ミント液","level":"初級","recipe":{"004":2},"unlock":"004","hint":""},{"id":"049","name":"活力の薬液","level":"初級","recipe":{"001":1,"005":1,"009":1},"unlock":"001","hint":""},{"id":"050","name":"琥珀保存液","level":"初級","recipe":{"039":1,"005":1},"unlock":"039","hint":""},{"id":"051","name":"発光観察液","level":"中級","recipe":{"040":1,"037":1},"unlock":"040","hint":""},{"id":"052","name":"魔力定着液","level":"中級","recipe":{"037":1,"039":1,"038":1},"unlock":"037","hint":""},{"id":"053","name":"霜結晶の冷却薬","level":"中級","recipe":{"042":2,"004":1},"unlock":"042","hint":""},{"id":"054","name":"夢紡ぎの香瓶","level":"中級","recipe":{"019":1,"003":1,"037":1},"unlock":"019","hint":""},{"id":"055","name":"しびれ毒","level":"上級","recipe":{"031":1,"040":1,"045":1},"unlock":"031","hint":""},{"id":"056","name":"心華の雫","level":"特殊薬","recipe":{"008":1,"015":1,"037":1},"unlock":null,"hint":"花の色と香り、星の露が導く調合。"},{"id":"057","name":"幻惑の滴","level":"特殊薬","recipe":{"030":1,"044":1,"040":1},"unlock":null,"hint":"光の反射と魔力の揺らぎを利用する。"},{"id":"058","name":"解毒の霊薬","level":"特殊薬","recipe":{"010":1,"009":1,"039":1},"unlock":null,"hint":"野外の薬草の性質に注目する。"},{"id":"059","name":"浮遊の秘薬","level":"特殊薬","recipe":{"041":1,"037":1,"039":1},"unlock":null,"hint":"浮遊する種子の魔力を保持する。"},{"id":"060","name":"未知植物の精髄","level":"特殊薬","recipe":{"035":1,"045":1,"037":1,"039":1},"unlock":null,"hint":"未知植物の魔力を抽出する。"}];
+const GREENHOUSE_IDS = ["001", "002", "003", "004", "005", "006", "007", "008", "009", "011", "012", "013", "014", "015", "016", "036", "038", "039", "042", "044"];
+const STORAGE='asterBotanicalJournal_v2';
 const DAILY_LIMIT=3;
 const dayKey=()=>{const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`};
-function getDailyCount(){try{const d=JSON.parse(localStorage.getItem(STORAGE+"_daily")||"{}");return d.date===dayKey()?d.count||0:0}catch(e){return 0}}
-function setDailyCount(count){localStorage.setItem(STORAGE+"_daily",JSON.stringify({date:dayKey(),count}))}
-const initial=()=>({inventory:{},found:[],lessons:0,lessonCounts:{},history:[],completed:false,potionInventory:{},learnedRecipes:[],potionHistory:[]});
-let state=loadState(), selectedLesson="", selectedMethod="";
-function loadState(){try{return {...initial(),...JSON.parse(localStorage.getItem(STORAGE)||"{}")}}catch(e){return initial()}}
+const initial=()=>({schema:4,inventory:{},found:[],lessons:0,lessonCounts:{},history:[],completed:false,learnedRecipes:[],craftHistory:[]});
+function loadState(){
+ try {
+  const prev=JSON.parse(localStorage.getItem(STORAGE)||'null');if(!prev)return initial();
+  const next={...initial(),...prev};
+  if((prev.schema||0)<4){
+   // Old 046-060 had different names. Do not silently transfer unrelated drugs or research notes.
+   next.found=next.found.filter(id=>+id<=45);
+   for(let n=46;n<=60;n++)delete next.inventory[String(n).padStart(3,'0')];
+   next.learnedRecipes=[];next.craftHistory=[];
+  }
+  next.schema=4;
+  next.found=[...new Set(next.found.filter(id=>ITEMS.some(i=>i.id===id)))];
+  next.learnedRecipes=Array.isArray(next.learnedRecipes)?next.learnedRecipes:[];
+  next.craftHistory=Array.isArray(next.craftHistory)?next.craftHistory:[];
+  return next;
+ }catch(e){return initial()}
+}
+function getDailyCount(){try{const d=JSON.parse(localStorage.getItem(STORAGE+'_daily')||'{}');return d.date===dayKey()?Math.min(DAILY_LIMIT,Math.max(0,Number(d.count)||0)):0}catch{return 0}}
+function setDailyCount(count){localStorage.setItem(STORAGE+'_daily',JSON.stringify({date:dayKey(),count}))}
+let state=loadState(),selectedLesson='',selectedMethod='',mode='recipes',selected={};
+const byId=id=>ITEMS.find(i=>i.id===id);
+const recipeById=id=>POTIONS.find(p=>p.id===id);
 function save(){localStorage.setItem(STORAGE,JSON.stringify(state));renderStats();renderDailyLimit()}
-function renderStats(){const found=state.found.length;document.getElementById("found").textContent=`${found} / ${ITEMS.length}`;document.getElementById("progress").style.width=`${found/ITEMS.length*100}%`;document.getElementById("possessed").textContent=Object.values(state.inventory).reduce((a,b)=>a+b,0)+Object.values(state.potionInventory||{}).reduce((a,b)=>a+b,0);document.getElementById("lessons").textContent=state.lessons}
-function renderDailyLimit(){
- const count=getDailyCount(), exhausted=count>=DAILY_LIMIT;
- const el=document.getElementById("dailyLimit");
- if(el)el.textContent=exhausted?`本日の授業：${count} / ${DAILY_LIMIT} 回（本日は終了。次の授業は明日から）`:`本日の授業：${count} / ${DAILY_LIMIT} 回（残り${DAILY_LIMIT-count}回）`;
- document.querySelectorAll("[data-lesson], [data-method]").forEach(btn=>btn.disabled=exhausted);
- const again=document.getElementById("againBtn");
- const craft=document.getElementById("craftBtn");if(craft)craft.disabled=exhausted;
- if(again){again.disabled=exhausted;again.textContent=exhausted?"本日の授業は終了":"もう一度実習する";}
+function record(text,meta={}){state.history.unshift({time:new Date().toLocaleString('ja-JP'),text,...meta});state.history=state.history.slice(0,120)}
+function renderStats(){const n=state.found.length;document.getElementById('found').textContent=`${n} / ${ITEMS.length}`;document.getElementById('progress').style.width=`${n/ITEMS.length*100}%`;document.getElementById('possessed').textContent=Object.values(state.inventory).reduce((a,b)=>a+(Number(b)||0),0);document.getElementById('lessons').textContent=state.lessons}
+function renderDailyLimit(){const n=getDailyCount(),end=n>=DAILY_LIMIT;document.getElementById('dailyLimit').textContent=end?`本日の授業：${n} / 3 回（本日の授業は終了しました）`:`本日の授業：${n} / 3 回（残り${3-n}回）`;document.querySelectorAll('[data-lesson],[data-method]').forEach(b=>b.disabled=end);const f=document.getElementById('craftFree');if(f)f.disabled=end;document.querySelectorAll('[data-craft]').forEach(b=>b.disabled=end||b.dataset.ready!=='true')}
+function rank(item){return item.rarity.length}
+function chooseItem(lesson,method){const allowed=(METHODS[lesson]||[]).find(m=>m.id===method)?.pool||[];let pool=allowed.map(byId).filter(Boolean).filter(i=>lesson==='野外調査'||(rank(i)<=3&&GREENHOUSE_IDS.includes(i.id)));if(!pool.length)return null;
+ const chance=lesson==='温室実習'?{1:60,2:30,3:10}:{1:40,2:30,3:20,4:8,5:2};const ranks=[...new Set(pool.map(rank))];let total=ranks.reduce((a,r)=>a+chance[r],0),v=Math.random()*total;let chosenRank=ranks[ranks.length-1];for(const r of ranks){v-=chance[r];if(v<0){chosenRank=r;break}}pool=pool.filter(i=>rank(i)===chosenRank);return pool[Math.floor(Math.random()*pool.length)]}
+function spendLesson(type){if(getDailyCount()>=DAILY_LIMIT)return false;setDailyCount(getDailyCount()+1);state.lessons++;state.lessonCounts[type]=(state.lessonCounts[type]||0)+1;return true}
+function acquire(id){state.inventory[id]=(state.inventory[id]||0)+1;const first=!state.found.includes(id);if(first)state.found.push(id);return first}
+function showResult(html){const el=document.getElementById('result');el.classList.remove('hidden');el.innerHTML=html;el.scrollIntoView({behavior:'smooth',block:'nearest'})}
+function setLesson(lesson){if(getDailyCount()>=3)return;selectedLesson=lesson;document.querySelectorAll('[data-lesson]').forEach(b=>b.classList.toggle('active',b.dataset.lesson===lesson));document.getElementById('result').classList.add('hidden');document.getElementById('methodBox').classList.toggle('hidden',lesson==='薬草調合');document.getElementById('craftBox').classList.toggle('hidden',lesson!=='薬草調合');if(lesson==='薬草調合'){renderCraft();return}document.getElementById('methodChoices').innerHTML=METHODS[lesson].map(m=>`<button class="choice" data-method="${m.id}"><strong>${m.title}</strong><small>${m.desc}</small></button>`).join('');document.querySelectorAll('[data-method]').forEach(b=>b.addEventListener('click',()=>gather(b.dataset.method)));renderDailyLimit()}
+function gather(methodId){if(getDailyCount()>=3){renderDailyLimit();return}const item=chooseItem(selectedLesson,methodId);if(!item)return;if(!spendLesson(selectedLesson))return;const first=acquire(item.id);record(`${selectedLesson}で${item.name}を${first?'初発見':'採取'}した`,{item:item.id,lesson:selectedLesson,first});save();renderInventory();renderCatalog();renderRecords();showResult(`<div class="itemhead"><div class="specimen">${+item.id<=35?'🌿':'🧪'}</div><div><span class="tag gold">${item.rarity}</span><h2>${item.name}</h2><span class="muted">No. ${item.id} · ${first?'初発見':'再入手'}</span></div></div><div class="teacher"><strong>アステル教授</strong><br>「よく観察できましたね。発見した素材は調合にも役立ちますよ」</div><p>${item.description}</p><p>所持数：${state.inventory[item.id]}</p><div class="actions"><button class="btn secondary" id="toCatalog">図鑑を見る</button></div>`);document.getElementById('toCatalog').addEventListener('click',()=>showPage('catalog'));renderDailyLimit()}
+const recipeNames=r=>Object.entries(r).map(([id,n])=>`${byId(id).name} ×${n}`).join(' ＋ ');
+const enough=r=>Object.entries(r).every(([id,n])=>(state.inventory[id]||0)>=n);
+const unlocked=p=>p.level==='特殊薬'?state.found.includes(p.id):state.found.includes(p.unlock);
+function renderCraft(){
+ document.getElementById('tabRecipes').classList.toggle('active',mode==='recipes');document.getElementById('tabFree').classList.toggle('active',mode==='free');document.getElementById('recipePanel').classList.toggle('hidden',mode!=='recipes');document.getElementById('ingredientPanel').classList.toggle('hidden',mode!=='free');
+ document.getElementById('recipePanel').innerHTML='<div class="grid" style="margin-top:14px">'+POTIONS.map(p=>{const open=unlocked(p),secret=p.level==='特殊薬';const ready=open&&enough(p.recipe)&&getDailyCount()<3;return `<article class="item"><div class="num">${p.id} · ${p.level}</div><h3>${secret&&!open?'？？？':p.name}</h3><p>${secret&&!open?p.hint:open?recipeNames(p.recipe):`🔒 解放条件：${byId(p.unlock).name}を初めて発見する`}</p><p class="muted">${secret&&!open?'レシピ未発見':open?'レシピ解放済み':'未解放'}</p>${open?`<button class="btn secondary" data-craft="${p.id}" data-ready="${ready}" ${ready?'':'disabled'}>調合する</button>`:''}</article>`}).join('')+'</div>';
+ document.querySelectorAll('[data-craft]').forEach(b=>b.addEventListener('click',()=>craft(recipeById(b.dataset.craft).recipe)));
+ document.getElementById('ingredientList').innerHTML=ITEMS.slice(0,45).map(i=>{const have=state.inventory[i.id]||0,n=Math.min(selected[i.id]||0,have);if(n)selected[i.id]=n;else delete selected[i.id];return `<div class="ingredient-row ${have?'':'unavailable'}"><span>${i.name}<small class="muted"> (所持${have})</small></span><span class="qtybuttons"><button data-add="${i.id}" data-step="-1" ${!n?'disabled':''} aria-label="${i.name}を減らす">−</button><span class="qtycount">${n}</span><button data-add="${i.id}" data-step="1" ${n>=have?'disabled':''} aria-label="${i.name}を増やす">＋</button></span></div>`}).join('');
+ document.querySelectorAll('[data-add]').forEach(b=>b.addEventListener('click',()=>{let id=b.dataset.add;selected[id]=Math.min(state.inventory[id]||0,Math.max(0,(selected[id]||0)+Number(b.dataset.step)));if(!selected[id])delete selected[id];renderCraft()}));
+ document.getElementById('selectedSummary').textContent=Object.keys(selected).length?`選択中：${recipeNames(selected)}`:'素材を選択してください。所持数0の素材は選択できません。';renderDailyLimit();
 }
-function rarityScore(r){return (r.match(/★/g)||[]).length}
-function hasItem(id){return (state.inventory[id]||0)>0}
-function eligible(item,method){
- const n=+item.id;
- if(n===60)return state.found.length>=59;
- if(n===59)return hasItem("035");
- if(n===58)return [38,43,36].filter(x=>hasItem(String(x).padStart(3,"0"))).length>=3;
- if(n===57)return state.found.filter(id=>+id>=46&&+id<=55).length>=3;
- if(n===56)return (state.lessonCounts["温室実習"]||0)>=2;
- if(n===55)return hasItem("035")&&hasItem("045");
- if(n===54)return hasItem("043");
- if(n===53)return hasItem("025");
- if(n===52)return hasItem("042");
- if(n===51)return hasItem("037");
- if(n===50)return hasItem("018");
- if(n===49)return hasItem("039");
- if(n===48||n===47||n===46)return true; // 初級調合は授業用の支給素材で製作できる
- if(n===45)return hasItem("035");
- if(n===44)return hasItem("024");
- if(n===43)return hasItem("033");
- if(n===42)return hasItem("028");
- if(n===41)return hasItem("027");
- if(n===40)return hasItem("023");
- if(n===39)return hasItem("029")||method.id==="soil";
- if(n===38)return method.id==="soil"||method.id==="root";
- if(n===37)return method.id==="rare"||method.id==="track";
- if(n===36)return hasItem("016")&&method.id==="observe";
- if(n===35)return [16,17,24,32,33].filter(x=>hasItem(String(x).padStart(3,"0"))).length>=3;
- if(n===34)return hasItem("023");
- if(n===33)return method.id==="root";
- if(n===32)return hasItem("017")&&method.id==="rare";
- if(n===31)return method.id==="track"||method.id==="rare";
- if(n===30)return method.id==="track";
- if(n===29)return method.id==="track"||method.id==="rare";
- if(n===28)return method.id==="track"||method.id==="rare";
- if(n===27)return method.id==="track";
- if(n===26)return method.id==="observe";
- if(n===25)return method.id==="observe";
- if(n===24)return method.id==="observe";
- if(n===23)return method.id==="track"||method.id==="rare";
- if(n===22)return method.id==="track";
- if(n===21)return method.id==="soil"||method.id==="root";
- if(n===20)return method.id==="track";
- if(n===19)return method.id==="track";
- if(n===18)return method.id==="observe";
- if(n===17)return method.id==="rare"||method.id==="track";
- if(n===16)return method.id==="observe";
- return true;
+function craft(recipe){if(getDailyCount()>=3){showResult('本日の授業は終了しました。');renderDailyLimit();return}
+ const chosen=Object.entries(recipe).filter(([,n])=>n>0);
+ if(!chosen.length){showResult('素材を選択してください。');return}
+ if(chosen.some(([id,n])=>!Number.isSafeInteger(n)||n<1||!byId(id)||+id>45||(state.inventory[id]||0)<n)){showResult('素材が足りません。所持数0の素材は選択できません。');renderCraft();return}
+ // Materials are consumed for both success and failure, then one daily use is spent.
+ if(!spendLesson('薬草調合'))return;
+ for(const [id,n] of chosen)state.inventory[id]-=n;
+ const potion=POTIONS.find(p=>Object.keys(p.recipe).length===chosen.length&&chosen.every(([id,n])=>p.recipe[id]===n));
+ const first=potion?!state.found.includes(potion.id):false;
+ if(potion){acquire(potion.id);record(`調合成功：${potion.name}${first?'（新レシピ発見）':''}`,{item:potion.id,lesson:'薬草調合',first,ingredients:{...recipe}});showResult(`<h2>⚗️ ${first&&potion.level==='特殊薬'?'特殊薬のレシピを発見！':'調合成功！'}</h2><p><strong>${potion.name}</strong>を1個獲得しました。</p><p>素材は消費されました。</p>`)}
+ else{record('調合失敗：素材を消費した',{lesson:'薬草調合',first:false,ingredients:{...recipe}});showResult('<h2>調合失敗</h2><p>魔力の定着に失敗しました。使用した素材はすべて消費されました。</p>')}
+ selected={};save();renderCraft();renderInventory();renderCatalog();renderRecords();renderDailyLimit();
 }
-function poolFor(lesson,method){
- // 実習ごとの成果物を厳密に分離。薬草調合では植物そのものを発見しない。
- let pool=ITEMS.filter(i=>method.cats.includes(i.category)&&eligible(i,method));
- if(lesson==="薬草調合"){
-  pool=pool.filter(i=>i.category==="調合薬・香油");
-  const recipes={
-   compare:[46,47,48,53],
-   mix:[46,47,48,50,51,53,55],
-   preserve:[46,47,48,49,52],
-   analyze:[46,47,48,50,51,54,55]
-  };
-  pool=pool.filter(i=>recipes[method.id].includes(+i.id));
- } else if(lesson==="温室実習"){
-  const greenhouse=[1,2,3,4,5,6,7,8,14,15,16,18,24,25,26,36,38,44,56];
-  pool=pool.filter(i=>greenhouse.includes(+i.id));
-  if(method.id==="observe")pool=pool.filter(i=>+i.id!==38);
-  if(method.id==="environment")pool=pool.filter(i=>i.category==="実在植物ベース"||i.category==="幻想植物");
-  if(method.id==="measure")pool=pool.filter(i=>i.category==="幻想植物"||i.category==="採取素材・標本");
- } else if(lesson==="野外調査"){
-  const outside=[9,10,11,12,13,17,19,20,21,22,23,27,28,29,30,31,32,33,34,35,37,39,40,41,42,43,45,58,59];
-  pool=pool.filter(i=>outside.includes(+i.id));
-  if(method.id==="root")pool=pool.filter(i=>[21,33,43,58].includes(+i.id));
-  if(method.id==="rare")pool=pool.filter(i=>[17,31,32,33,34,35,37,43,45,58,59].includes(+i.id));
- }
- // 図鑑完成の報酬だけは、最後の1種になった場合に実習の種類を問わず獲得可能。
- // 特別な研究記録は到達条件を満たした授業でのみ候補に加える。
- const bonusIds=lesson==="温室実習"?[56]:lesson==="薬草調合"?[57]:[58,59];
- for(const id of bonusIds){const bonus=ITEMS.find(i=>+i.id===id);if(eligible(bonus,method)&&!pool.includes(bonus))pool.push(bonus)}
- const completion=ITEMS.find(i=>i.id==="060");
- if(eligible(completion,method))pool.push(completion);
- return pool;
-}
-
-function weightedPick(pool){
- if(!pool.length)return null;
- const unseen=pool.filter(i=>!state.found.includes(i.id));
- let choices=unseen.length?unseen:pool;
- let weights=choices.map(i=>{let r=rarityScore(i.rarity);let w=Math.max(1,7-r);if(!state.found.includes(i.id))w*=1.45;if(+i.id>=56)w*=.18;return w});
- let total=weights.reduce((a,b)=>a+b,0),x=Math.random()*total;
- for(let i=0;i<choices.length;i++){x-=weights[i];if(x<=0)return choices[i]}
- return choices[choices.length-1];
-}
-function setLesson(lesson){if(getDailyCount()>=DAILY_LIMIT){renderDailyLimit();return;}selectedLesson=lesson;selectedMethod="";document.querySelectorAll("[data-lesson]").forEach(b=>b.classList.toggle("active",b.dataset.lesson===lesson));const box=document.getElementById("methodBox");box.classList.remove("hidden");document.getElementById("methodChoices").innerHTML=METHODS[lesson].map(m=>`<button class="choice" data-method="${m.id}"><strong>${m.title}</strong><small>${m.desc}</small></button>`).join("");document.querySelectorAll("[data-method]").forEach(b=>b.addEventListener("click",()=>runLesson(b.dataset.method)));document.getElementById("result").classList.add("hidden");renderDailyLimit()}
-function runLesson(methodId){
- // 回数を消費する前にチェック。連打やボタンを再有効化しても4回目は実行しない。
- if(getDailyCount()>=DAILY_LIMIT){renderDailyLimit();return;}
- const method=METHODS[selectedLesson].find(m=>m.id===methodId);if(!method)return;selectedMethod=methodId;
- const specialSoilEvent = selectedLesson === "温室実習" && methodId === "soil";
- let pool=poolFor(selectedLesson,method);let item=specialSoilEvent ? ITEMS.find(i=>i.id==="038") : weightedPick(pool);
- if(!item){document.getElementById("result").classList.remove("hidden");document.getElementById("result").textContent="この方法で作れる調合品・発見はまだありません。別の方法を試してください。";return;}
- const first=!state.found.includes(item.id);state.inventory[item.id]=(state.inventory[item.id]||0)+1;
- if(first)state.found.push(item.id);
- state.lessons++;state.lessonCounts[selectedLesson]=(state.lessonCounts[selectedLesson]||0)+1;setDailyCount(getDailyCount()+1);
- const quotes={
-  "温室実習":"「よく観察することが、発見への第一歩です。見慣れた葉にも、思いがけない特徴が隠れているものですよ」",
-  "薬草調合":"「組み合わせる前に、素材の性質を確かめましょう。小さな違いが、調合の結果を大きく変えることもあります」",
-  "野外調査":"「焦らず、周囲をよく見てください。植物は生えている場所にも、たくさんの手がかりを残しているんです」"
- };
- const methodText={"observe":"花弁や葉を詳しく観察した","soil":"根元の土と魔力の流れを調べた","environment":"植物の生育環境を比較した","measure":"魔力の反応を測定した","compare":"薬草の香りと性質を比較した","water":"水辺や木陰を調査した","mix":"素材の特徴を確かめながら調合した","preserve":"標本の保存方法を試した","analyze":"素材の魔力反応を分析した","track":"地面や根の痕跡をたどった","water":"水辺や木陰を調査した","root":"周囲の魔力の流れを調べた","rare":"珍しい植物の特徴を記録した","environment":"植物の生育環境を比較した","measure":"魔力の反応を測定した","compare":"薬草の香りと性質を比較した"};
- const eventLine=first?`初めての発見です。${item.name}が図鑑に登録されました。`:`${item.name}をもうひとつ入手しました。所持数が増えました。`;
- const specialScene = "温室の奥、淡い光を放つ花の前で足を止め、花弁ではなく根元へ視線を落とした。土を少し掘り起こすと、根の周囲を縫うように青白い光が走り、地中に細い川が流れているかのようにゆっくり明滅した。\n\n花そのものが光を生み出しているのではなく、根を通して土壌から魔力を吸い上げ、花弁へ送り込んでいるのかもしれない。採取した土にも、通常の温室土壌より強い魔力反応が残っていた。";
- const specialQuote = "「なるほど……花弁が光っているからといって、光の発生源が花そのものとは限らないわけですね。根が土壌中の魔力を吸収し、花へと運んでいる可能性があります」\n\n「この土にも、魔力の痕跡がかなり濃く残っています。ふふ、これは面白い。花だけを観察していたら、きっと見落としていたでしょうね。持ち帰って、反応の変化を調べてみましょう」";
- const specialNote = "植物と土壌は、私たちが考える以上に密接につながっているのかもしれません。次は、花がなくなった後にも魔力が残るのかを確かめてみたいですね。";
- const icon=item.category==="実在植物ベース"?"🌿":item.category==="幻想植物"?"✨":item.category==="採取素材・標本"?"🧪":item.category==="調合薬・香油"?"⚗️":"📜";
- const result=document.getElementById("result");result.classList.remove("hidden");
- result.innerHTML=`<div class="itemhead"><div class="specimen">${icon}</div><div><span class="tag">${item.category}</span><span class="tag gold">${item.rarity}</span><h2>${item.name}</h2><div class="muted">No. ${item.id} · ${first?"初発見":"重複入手"}</div></div></div>${specialSoilEvent?`<p class="event-scene">${specialScene.replaceAll("\n","<br>")}</p>`:""}<div class="teacher"><strong>アステル教授</strong><br>${specialSoilEvent?specialQuote.replaceAll("\n","<br>"):quotes[selectedLesson]}</div><p>あなたは${methodText[methodId]}。${specialSoilEvent?"調査の結果、根の周囲に魔力の流れが残る土壌を採取した。":"調査の結果、"}<strong>${item.name}</strong>${specialSoilEvent?"":selectedLesson==="薬草調合"?"を完成させた。":"を発見した。"}</p><p>${eventLine}</p><div class="detail"><strong>図鑑の説明</strong><p>${item.description}</p><strong>入手条件</strong><p>${item.condition}</p><strong>教授の研究メモ</strong><p>${specialSoilEvent?`「${specialNote}」`:first?`「いい発見ですね。${item.name}について、もう少し詳しく調べてみたいものです」`:`「同じものでも、何度観察しても新しいことに気づくものですよ」`}</p><div class="count">所持数：${state.inventory[item.id]}</div></div><div class="actions"><button class="btn" id="againBtn">もう一度実習する</button><button class="btn secondary" id="toCatalog">図鑑を見る</button></div>`;
- state.history.unshift({item:item.id,lesson:selectedLesson,method:methodText[methodId],first,time:new Date().toLocaleString("ja-JP")});state.history=state.history.slice(0,80);
- if(state.found.length===ITEMS.length&&!state.completed){state.completed=true;result.innerHTML+=`<div class="teacher"><strong>図鑑完成！</strong><br>「すばらしい！　これほどの発見を積み重ねるとは。ぜひ、この特別講義録を受け取ってください」</div>`}
- save();renderInventory();renderCatalog();renderRecords();
- document.getElementById("againBtn").addEventListener("click",()=>{result.classList.add("hidden");document.getElementById("methodBox").scrollIntoView({behavior:"smooth",block:"start"})});
- document.getElementById("toCatalog").addEventListener("click",()=>showPage("catalog"));
- result.scrollIntoView({behavior:"smooth",block:"nearest"});
-}
-function itemCard(i,locked=false){const count=state.inventory[i.id]||0;const icon=locked?"❔":i.category==="実在植物ベース"?"🌿":i.category==="幻想植物"?"✨":i.category==="採取素材・標本"?"🧪":i.category==="調合薬・香油"?"⚗️":"📜";return `<article class="item ${locked?"locked":""}"><div class="itemhead"><div class="specimen">${icon}</div><div><div class="num">NO. ${i.id}</div><h3>${locked?"？？？":i.name}</h3><span class="tag">${locked?"未発見":i.category}</span>${!locked?`<span class="tag gold">${i.rarity}</span>`:""}</div></div><p>${locked?"まだ記録されていない発見です。授業や探索を続けましょう。":i.description}</p>${!locked?`<div class="count">所持数：${count}</div><p class="muted">入手方法：${i.condition}</p>`:""}</article>`}
-function renderInventory(){const cat=document.getElementById("invCategory").value||"",q=(document.getElementById("invSearch").value||"").toLowerCase();const list=ITEMS.filter(i=>(state.inventory[i.id]||0)>0&&(!cat||i.category===cat)&&i.name.toLowerCase().includes(q));document.getElementById("inventoryGrid").innerHTML=list.length?list.map(i=>itemCard(i)).join(""):`<div class="empty">まだアイテムを持っていません。授業に参加して、最初の発見をしましょう。</div>`}
-function renderCatalog(){const cat=document.getElementById("catCategory").value||"",status=document.getElementById("catStatus").value,q=(document.getElementById("catSearch").value||"").toLowerCase();const list=ITEMS.filter(i=>(!cat||i.category===cat)&&(status==="all"||(status==="found"?state.found.includes(i.id):!state.found.includes(i.id)))&&(i.name.toLowerCase().includes(q)||i.id.includes(q)));document.getElementById("catalogGrid").innerHTML=list.map(i=>itemCard(i,!state.found.includes(i.id))).join("")||`<div class="empty">該当するアイテムはありません。</div>`}
-function renderRecords(){document.getElementById("recordSummary").innerHTML=`授業回数：<strong>${state.lessons}</strong>回<br>発見済み：<strong>${state.found.length} / ${ITEMS.length}</strong>種類<br>完成率：<strong>${Math.floor(state.found.length/ITEMS.length*100)}%</strong><br>温室実習：${state.lessonCounts["温室実習"]||0}回／薬草調合：${state.lessonCounts["薬草調合"]||0}回／野外調査：${state.lessonCounts["野外調査"]||0}回${state.completed?"<br><strong>植物学実習図鑑 完成済み</strong>":""}`;document.getElementById("recordList").innerHTML=state.history.length?state.history.map(h=>{let i=ITEMS.find(x=>x.id===h.item);return `<div class="item" style="margin-top:8px"><strong>${h.first?"★ 初発見":"重複入手"}：${i?i.name:h.item}</strong><div class="muted">${h.time} · ${h.lesson} · ${h.method}</div></div>`}).join(""):`<div class="empty">まだ研究記録はありません。</div>`}
-function showPage(page){document.querySelectorAll(".page").forEach(p=>p.classList.toggle("hidden",p.id!=="page-"+page));document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page));if(page==="inventory")renderInventory();if(page==="catalog")renderCatalog();if(page==="records")renderRecords();if(page==="potions")renderPotionRoom();window.scrollTo({top:0,behavior:"smooth"})}
-document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
-document.querySelectorAll("[data-lesson]").forEach(b=>b.addEventListener("click",()=>setLesson(b.dataset.lesson)));
-function fillCategories(){const cats=[...new Set(ITEMS.map(i=>i.category))];["invCategory","catCategory"].forEach(id=>{const el=document.getElementById(id);cats.forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;el.appendChild(o)})})}
-["invCategory","invSearch"].forEach(id=>document.getElementById(id).addEventListener("input",renderInventory));
-["catCategory","catStatus","catSearch"].forEach(id=>document.getElementById(id).addEventListener("input",renderCatalog));
-document.getElementById("exportBtn").addEventListener("click",()=>{const blob=new Blob([JSON.stringify({...state,daily:{date:dayKey(),count:getDailyCount()}},null,2)],{type:"application/json"});const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="aster-botanical-save.json";a.click();URL.revokeObjectURL(a.href)});
-document.getElementById("importBtn").addEventListener("click",()=>document.getElementById("importFile").click());
-document.getElementById("importFile").addEventListener("change",async e=>{const f=e.target.files[0];if(!f)return;try{const obj=JSON.parse(await f.text());if(!obj.inventory||!Array.isArray(obj.found))throw Error();state={...initial(),...obj};ensurePotionState();chosenIngredients={};if(obj.daily?.date===dayKey())setDailyCount(Math.max(getDailyCount(),Math.min(DAILY_LIMIT,Number(obj.daily.count)||0)));save();renderInventory();renderCatalog();renderRecords();alert("セーブデータを読み込みました。")}catch(err){alert("このセーブデータは読み込めませんでした。")}e.target.value=""});
-document.getElementById("resetBtn").addEventListener("click",()=>{if(confirm("所持品と図鑑の進捗をすべて消して最初から始めますか？")){state=initial();chosenIngredients={};setDailyCount(0);save();renderInventory();renderCatalog();renderRecords();document.getElementById("result").classList.add("hidden")}});
-fillCategories();renderPotionRoom();renderStats();renderDailyLimit();renderInventory();renderCatalog();renderRecords();
+function itemCard(i,locked=false){let n=state.inventory[i.id]||0,secret=+i.id>=56,hide=locked&&secret;return `<article class="item ${locked?'locked':''}"><div class="itemhead"><div class="specimen">${locked?'❔':+i.id>=46?'⚗️':+i.id>=36?'🧪':'🌿'}</div><div><div class="num">NO. ${i.id}</div><h3>${locked?'？？？':i.name}</h3><span class="tag">${locked?'未発見':i.category}</span>${!locked?`<span class="tag gold">${i.rarity}</span>`:''}</div></div><p>${locked?(hide?'未知の特殊薬。自由調合で発見しましょう。':'まだ図鑑に登録されていません。'):i.description}</p>${!locked?`<div class="count">所持数：${n}</div>`:''}</article>`}
+function renderInventory(){let cat=document.getElementById('invCategory').value,q=document.getElementById('invSearch').value.toLowerCase();let list=ITEMS.filter(i=>(state.inventory[i.id]||0)>0&&(!cat||cat===i.category)&&i.name.toLowerCase().includes(q));document.getElementById('inventoryGrid').innerHTML=list.length?list.map(i=>itemCard(i)).join(''):'<div class="empty">まだ所持しているアイテムがありません。</div>'}
+function renderCatalog(){let cat=document.getElementById('catCategory').value,q=document.getElementById('catSearch').value.toLowerCase(),status=document.getElementById('catStatus').value;let list=ITEMS.filter(i=>(!cat||i.category===cat)&&(status==='all'||(status==='found')===state.found.includes(i.id))&&(i.name.toLowerCase().includes(q)||i.id.includes(q)));document.getElementById('catalogGrid').innerHTML=list.map(i=>itemCard(i,!state.found.includes(i.id))).join('')||'<div class="empty">該当するアイテムはありません。</div>'}
+function renderRecords(){document.getElementById('recordSummary').innerHTML=`授業回数：${state.lessons}回<br>図鑑：${state.found.length} / 60 種類<br>調合薬の発見：${state.found.filter(id=>+id>=46).length} / 15 種類`;document.getElementById('recordList').innerHTML=state.history.length?state.history.map(h=>`<div class="item" style="margin-top:8px"><strong>${h.text||'過去の授業記録'}</strong><div class="muted">${h.time||''} · ${h.lesson||''}</div>${h.ingredients?`<p class="muted">使用した素材：${recipeNames(h.ingredients)}</p>`:''}</div>`).join(''):'<div class="empty">まだ研究記録はありません。</div>'}
+function showPage(page){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('hidden',p.id!=='page-'+page));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));if(page==='inventory')renderInventory();if(page==='catalog')renderCatalog();if(page==='records')renderRecords();window.scrollTo({top:0,behavior:'smooth'})}
+function fillCategories(){const cats=[...new Set(ITEMS.map(i=>i.category))];for(const id of ['invCategory','catCategory'])for(const cat of cats){const option=document.createElement('option');option.value=cat;option.textContent=cat;document.getElementById(id).appendChild(option)}}
+document.querySelectorAll('[data-lesson]').forEach(b=>b.addEventListener('click',()=>setLesson(b.dataset.lesson)));
+document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
+for(const id of ['invCategory','invSearch'])document.getElementById(id).addEventListener('input',renderInventory);
+for(const id of ['catCategory','catSearch','catStatus'])document.getElementById(id).addEventListener('input',renderCatalog);
+document.getElementById('tabRecipes').addEventListener('click',()=>{mode='recipes';renderCraft()});document.getElementById('tabFree').addEventListener('click',()=>{mode='free';renderCraft()});document.getElementById('craftFree').addEventListener('click',()=>craft({...selected}));document.getElementById('clearSelection').addEventListener('click',()=>{selected={};renderCraft()});
+document.getElementById('exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify({...state,daily:{date:dayKey(),count:getDailyCount()}},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='aster-botanical-save.json';a.click();URL.revokeObjectURL(a.href)});
+document.getElementById('importBtn').addEventListener('click',()=>document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change',async e=>{let f=e.target.files[0];if(!f)return;try{let incoming=JSON.parse(await f.text());if(!incoming.inventory||!Array.isArray(incoming.found))throw Error();state={...initial(),...incoming};if(state.schema!==4){state.found=state.found.filter(id=>+id<=45);for(let n=46;n<=60;n++)delete state.inventory[String(n).padStart(3,'0')];state.schema=4}state.found=[...new Set(state.found.filter(id=>byId(id)))];selected={};if(incoming.daily?.date===dayKey())setDailyCount(Math.max(getDailyCount(),Math.min(3,Number(incoming.daily.count)||0)));save();renderCraft();renderInventory();renderCatalog();renderRecords();alert('セーブデータを読み込みました。')}catch{alert('読み込めないセーブデータです。')}e.target.value=''});
+document.getElementById('resetBtn').addEventListener('click',()=>{if(!confirm('図鑑・所持品・研究記録をすべて消しますか？'))return;state=initial();selected={};setDailyCount(0);save();renderCraft();renderInventory();renderCatalog();renderRecords();document.getElementById('result').classList.add('hidden')});
+fillCategories();renderStats();renderDailyLimit();renderInventory();renderCatalog();renderRecords();

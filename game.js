@@ -3,8 +3,10 @@ const STORAGE='asterBotanicalJournal_v2';
 const DAILY_LIMIT=3;
 // TESTセーブは通常プレイと完全分離。オン/オフ設定だけを独立保存。
 const TEST_SAVE=STORAGE+'_test';
-const TEST_MODE_KEY = STORAGE + '_test_enabled';
-let testMode = false;
+const TEST_MODE_KEY=STORAGE+'_test_enabled';
+// 公開版：TESTモードを常に無効にする。過去の保存設定が true でも無視します。
+const PUBLIC_MODE=true;
+let testMode=false;
 const activeSaveKey=()=>testMode?TEST_SAVE:STORAGE;
 const lessonLimitReached=()=>!testMode&&getDailyCount()>=DAILY_LIMIT;
 
@@ -35,8 +37,9 @@ const recipeById=id=>POTIONS.find(p=>p.id===id);
 function save(){localStorage.setItem(activeSaveKey(),JSON.stringify(state));renderStats();renderDailyLimit()}
 function record(text,meta={}){state.history.unshift({time:new Date().toLocaleString('ja-JP'),text,...meta});state.history=state.history.slice(0,120)}
 function renderStats(){const n=state.found.length;document.getElementById('found').textContent=`${n} / ${ITEMS.length}`;document.getElementById('progress').style.width=`${n/ITEMS.length*100}%`;document.getElementById('possessed').textContent=Object.values(state.inventory).reduce((a,b)=>a+(Number(b)||0),0);document.getElementById('lessons').textContent=state.lessons}
-function renderDailyLimit(){const n=getDailyCount(),end=lessonLimitReached();document.getElementById('dailyLimit').textContent=testMode?'🧪 TESTモード：授業回数は無制限（通常プレイの残り回数は消費しません）':end?`本日の授業：${n} / 3 回（本日の授業は終了しました）`:`本日の授業：${n} / 3 回（残り${3-n}回）`;document.querySelectorAll('[data-lesson],[data-method]').forEach(b=>b.disabled=end);const f=document.getElementById('craftFree');if(f)f.disabled=end;document.querySelectorAll('[data-craft]').forEach(b=>b.disabled=end||b.dataset.ready!=='true');const toggle=document.getElementById('testModeToggle');if(toggle){toggle.textContent=testMode?'🧪 TESTモード：ON':'🧪 TESTモード：OFF';toggle.setAttribute('aria-pressed',String(testMode));toggle.classList.toggle('test-active',testMode)}document.getElementById('testModeDescription').textContent=testMode?'テスト専用セーブでプレイ中。通常の図鑑・所持品には影響しません。':'通常プレイ：1日3回まで';document.body.classList.toggle('test-mode',testMode)}
+function renderDailyLimit(){const n=getDailyCount(),end=lessonLimitReached();document.getElementById('dailyLimit').textContent=testMode?'🧪 TESTモード：授業回数は無制限（通常プレイの残り回数は消費しません）':end?`本日の授業：${n} / 3 回（本日の授業は終了しました）`:`本日の授業：${n} / 3 回（残り${3-n}回）`;document.querySelectorAll('[data-lesson],[data-method]').forEach(b=>b.disabled=end);const f=document.getElementById('craftFree');if(f)f.disabled=end;document.querySelectorAll('[data-craft]').forEach(b=>b.disabled=end||b.dataset.ready!=='true');const toggle=document.getElementById('testModeToggle');if(toggle){toggle.textContent=testMode?'🧪 TESTモード：ON':'🧪 TESTモード：OFF';toggle.setAttribute('aria-pressed',String(testMode));toggle.classList.toggle('test-active',testMode)}const testDescription=document.getElementById('testModeDescription');if(testDescription)testDescription.textContent=testMode?'テスト専用セーブでプレイ中。通常の図鑑・所持品には影響しません。':'通常プレイ：1日3回まで';document.body.classList.toggle('test-mode',testMode)}
 function toggleTestMode(){
+ if(PUBLIC_MODE)return; // 公開版では切り替え不可
  // 初回TEST起動のみ通常データを複製。以降はテスト専用データを継続利用。
  if(!testMode&&!localStorage.getItem(TEST_SAVE))localStorage.setItem(TEST_SAVE,JSON.stringify(state));
  testMode=!testMode;
@@ -85,7 +88,8 @@ function renderCatalog(){let cat=document.getElementById('catCategory').value,q=
 function renderRecords(){document.getElementById('recordSummary').innerHTML=`授業回数：${state.lessons}回<br>図鑑：${state.found.length} / 60 種類<br>調合薬の発見：${state.found.filter(id=>+id>=46).length} / 15 種類`;document.getElementById('recordList').innerHTML=state.history.length?state.history.map(h=>`<div class="item" style="margin-top:8px"><strong>${h.text||'過去の授業記録'}</strong><div class="muted">${h.time||''} · ${h.lesson||''}</div>${h.ingredients?`<p class="muted">使用した素材：${recipeNames(h.ingredients)}</p>`:''}</div>`).join(''):'<div class="empty">まだ研究記録はありません。</div>'}
 function showPage(page){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('hidden',p.id!=='page-'+page));document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));if(page==='inventory')renderInventory();if(page==='catalog')renderCatalog();if(page==='records')renderRecords();window.scrollTo({top:0,behavior:'smooth'})}
 function fillCategories(){const cats=[...new Set(ITEMS.map(i=>i.category))];for(const id of ['invCategory','catCategory'])for(const cat of cats){const option=document.createElement('option');option.value=cat;option.textContent=cat;document.getElementById(id).appendChild(option)}}
-document.getElementById('testModeToggle').addEventListener('click',toggleTestMode);
+const testToggle=document.getElementById('testModeToggle');
+if(testToggle&&!PUBLIC_MODE)testToggle.addEventListener('click',toggleTestMode);
 document.querySelectorAll('[data-lesson]').forEach(b=>b.addEventListener('click',()=>setLesson(b.dataset.lesson)));
 document.querySelectorAll('nav button').forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
 for(const id of ['invCategory','invSearch'])document.getElementById(id).addEventListener('input',renderInventory);

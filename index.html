@@ -22,7 +22,7 @@
     <section id="page-class" class="page">
       <div class="panel">
         <h2>今日の実習</h2>
-        <p class="muted">授業を選び、調査方法を決めて、まだ見ぬ発見を探しましょう。回数制限はありません。</p>
+        <p class="muted">授業を選び、調査方法を決めて、まだ見ぬ発見を探しましょう。1日に受けられる授業は3回までです。</p>
         <div class="teacher"><strong>アステル教授</strong><br>「世界には、まだ誰にも見つけられていないものがたくさんあるんです。さて、今日はどこから調べてみましょうか？」</div>
         <h3>1. 授業を選ぶ</h3>
         <div class="choices" id="lessonChoices">
@@ -30,7 +30,7 @@
           <button class="choice" data-lesson="薬草調合"><strong>⚗️ 薬草調合実習</strong><small>素材を組み合わせ、研究用の調合品を作る。</small></button>
           <button class="choice" data-lesson="野外調査"><strong>🌙 希少植物の野外調査</strong><small>森や水辺、根元の土から未知の手がかりを探す。</small></button>
         </div>
-        <div id="methodBox" class="hidden">
+        <p id="dailyLimit" class="muted">本日の授業：0 / 3 回</p><div id="methodBox" class="hidden">
           <h3 style="margin-top:20px">2. 調査方法を選ぶ</h3>
           <div id="methodChoices" class="choices"></div>
         </div>

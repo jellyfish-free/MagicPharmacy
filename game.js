@@ -4,25 +4,33 @@ const METHODS = {
  "温室実習":[
   {id:"observe",title:"花や葉を詳しく観察する",desc:"花弁・葉・香りなど、目の前の特徴を記録する。",cats:["実在植物ベース","幻想植物","採取素材・標本"]},
   {id:"soil",title:"根元の土と魔力を調べる",desc:"土壌や根の周囲にある魔力の流れを探す。",cats:["幻想植物","採取素材・標本"]},
-  {id:"fox",title:"白狐に周囲を探してもらう",desc:"狭い場所や植物の陰に隠れたものを探す。",cats:["幻想植物","実在植物ベース"]}
+  {id:"environment",title:"植物の生育環境を比較する",desc:"日当たりや湿度の違いが植物に与える影響を調べる。",cats:["実在植物ベース","幻想植物"]},
+  {id:"measure",title:"魔力の反応を測定する",desc:"専用の観測器具で植物が示す魔力反応を記録する。",cats:["幻想植物","採取素材・標本"]}
  ],
  "薬草調合":[
-  {id:"mix",title:"基本の薬草を調合する",desc:"知っている薬草を使い、初級の調合品を作る。",cats:["調合薬・香油","実在植物ベース"]},
-  {id:"preserve",title:"標本の保存方法を試す",desc:"採取素材の性質を観察し、保存液を研究する。",cats:["調合薬・香油","採取素材・標本"]},
+  {id:"compare",title:"薬草の香りと性質を比較する",desc:"複数の薬草を観察し、それぞれの特徴を記録する。",cats:["実在植物ベース","調合薬・香油"]},
+  {id:"mix",title:"薬草を組み合わせて調合する",desc:"素材の組み合わせによる色や香りの変化を調べる。",cats:["調合薬・香油","実在植物ベース"]},
+  {id:"preserve",title:"抽出液の変化を観察する",desc:"時間経過による色や透明度の変化を記録する。",cats:["調合薬・香油","採取素材・標本"]},
   {id:"analyze",title:"魔力反応を分析する",desc:"魔力植物の素材から研究用の調合品を作る。",cats:["調合薬・香油","幻想植物"]}
  ],
  "野外調査":[
-  {id:"track",title:"森や水辺を探索する",desc:"生育環境を手がかりに植物を探す。",cats:["実在植物ベース","幻想植物"]},
-  {id:"root",title:"根脈の流れを調べる",desc:"地下に伸びる根や魔力の流れを追う。",cats:["幻想植物","採取素材・標本"]},
-  {id:"rare",title:"希少植物の痕跡を追う",desc:"既に発見した標本を手がかりに未知の植物を探す。",cats:["幻想植物","採取素材・標本","研究記録・特別な発見"]}
+  {id:"track",title:"地面や根の痕跡をたどる",desc:"土の盛り上がりや根の伸び方から植物の存在を探る。",cats:["実在植物ベース","幻想植物","採取素材・標本"]},
+  {id:"water",title:"水辺や木陰を調査する",desc:"植物が生育しやすい場所を探して観察する。",cats:["実在植物ベース","幻想植物"]},
+  {id:"root",title:"周囲の魔力の流れを調べる",desc:"地面や植物の周囲にある魔力反応を測定する。",cats:["幻想植物","採取素材・標本"]},
+  {id:"rare",title:"珍しい植物の特徴を記録する",desc:"植物の形状や色、生育場所を記録して分類する。",cats:["幻想植物","採取素材・標本","研究記録・特別な発見"]}
  ]
 };
-const STORAGE="asterBotanicalJournal_v1";
+const STORAGE="asterBotanicalJournal_v2";
+const DAILY_LIMIT=3;
+const dayKey=()=>{const d=new Date();return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`};
+function getDailyCount(){try{const d=JSON.parse(localStorage.getItem(STORAGE+"_daily")||"{}");return d.date===dayKey()?d.count||0:0}catch(e){return 0}}
+function setDailyCount(count){localStorage.setItem(STORAGE+"_daily",JSON.stringify({date:dayKey(),count}))}
 const initial=()=>({inventory:{},found:[],lessons:0,lessonCounts:{},history:[],completed:false});
 let state=loadState(), selectedLesson="", selectedMethod="";
 function loadState(){try{return {...initial(),...JSON.parse(localStorage.getItem(STORAGE)||"{}")}}catch(e){return initial()}}
-function save(){localStorage.setItem(STORAGE,JSON.stringify(state));renderStats()}
+function save(){localStorage.setItem(STORAGE,JSON.stringify(state));renderStats();renderDailyLimit()}
 function renderStats(){const found=state.found.length;document.getElementById("found").textContent=`${found} / ${ITEMS.length}`;document.getElementById("progress").style.width=`${found/ITEMS.length*100}%`;document.getElementById("possessed").textContent=Object.values(state.inventory).reduce((a,b)=>a+b,0);document.getElementById("lessons").textContent=state.lessons}
+function renderDailyLimit(){const el=document.getElementById("dailyLimit");if(el)el.textContent=`本日の授業：${getDailyCount()} / ${DAILY_LIMIT} 回`;const btn=document.getElementById("exploreBtn");if(btn)btn.disabled=getDailyCount()>=DAILY_LIMIT}
 function rarityScore(r){return (r.match(/★/g)||[]).length}
 function hasItem(id){return (state.inventory[id]||0)>0}
 function eligible(item,method){
@@ -60,15 +68,15 @@ function eligible(item,method){
  if(n===30)return method.id==="track";
  if(n===29)return method.id==="track"||method.id==="rare";
  if(n===28)return method.id==="track"||method.id==="rare";
- if(n===27)return method.id==="track"||method.id==="fox";
+ if(n===27)return method.id==="track";
  if(n===26)return method.id==="observe";
  if(n===25)return method.id==="observe";
  if(n===24)return method.id==="observe";
  if(n===23)return method.id==="track"||method.id==="rare";
  if(n===22)return method.id==="track";
  if(n===21)return method.id==="soil"||method.id==="root";
- if(n===20)return method.id==="track"||method.id==="fox";
- if(n===19)return method.id==="track"||method.id==="fox";
+ if(n===20)return method.id==="track";
+ if(n===19)return method.id==="track";
  if(n===18)return method.id==="observe";
  if(n===17)return method.id==="rare"||method.id==="track";
  if(n===16)return method.id==="observe";
@@ -84,7 +92,7 @@ function poolFor(lesson,method){
  if(method.id==="analyze")pool=pool.filter(i=>(+i.id>=16&&+i.id<=35)||(+i.id>=50&&+i.id<=55));
  if(method.id==="root")pool=pool.filter(i=>[21,33,38,43,54,58].includes(+i.id));
  if(method.id==="rare")pool=pool.filter(i=>[17,31,32,33,34,35,37,43,45,58,59].includes(+i.id));
- if(method.id==="fox")pool=pool.filter(i=>[7,19,20,22,27,30,31,34].includes(+i.id)||i.category==="実在植物ベース");
+
  return pool;
 }
 function weightedPick(pool){
@@ -104,13 +112,13 @@ function runLesson(methodId){
  if(!item){item=ITEMS.find(i=>method.cats.includes(i.category)&&eligible(i,method))||ITEMS[0]}
  const first=!state.found.includes(item.id);state.inventory[item.id]=(state.inventory[item.id]||0)+1;
  if(first)state.found.push(item.id);
- state.lessons++;state.lessonCounts[selectedLesson]=(state.lessonCounts[selectedLesson]||0)+1;
+ state.lessons++;state.lessonCounts[selectedLesson]=(state.lessonCounts[selectedLesson]||0)+1;setDailyCount(getDailyCount()+1);
  const quotes={
   "温室実習":"「よく観察することが、発見への第一歩です。見慣れた葉にも、思いがけない特徴が隠れているものですよ」",
   "薬草調合":"「組み合わせる前に、素材の性質を確かめましょう。小さな違いが、調合の結果を大きく変えることもあります」",
   "野外調査":"「焦らず、周囲をよく見てください。植物は生えている場所にも、たくさんの手がかりを残しているんです」"
  };
- const methodText={"observe":"花弁や葉を詳しく観察した","soil":"根元の土と魔力の流れを調べた","fox":"白狐に周囲を探索してもらった","mix":"素材の特徴を確かめながら調合した","preserve":"標本の保存方法を試した","analyze":"素材の魔力反応を分析した","track":"生育環境を手がかりに探索した","root":"地下に伸びる根と魔力の流れを追った","rare":"希少植物の痕跡を追跡した"};
+ const methodText={"observe":"花弁や葉を詳しく観察した","soil":"根元の土と魔力の流れを調べた","environment":"植物の生育環境を比較した","measure":"魔力の反応を測定した","compare":"薬草の香りと性質を比較した","water":"水辺や木陰を調査した","mix":"素材の特徴を確かめながら調合した","preserve":"標本の保存方法を試した","analyze":"素材の魔力反応を分析した","track":"地面や根の痕跡をたどった","water":"水辺や木陰を調査した","root":"周囲の魔力の流れを調べた","rare":"珍しい植物の特徴を記録した","environment":"植物の生育環境を比較した","measure":"魔力の反応を測定した","compare":"薬草の香りと性質を比較した"};
  const eventLine=first?`初めての発見です。${item.name}が図鑑に登録されました。`:`${item.name}をもうひとつ入手しました。所持数が増えました。`;
  const specialScene = "温室の奥、淡い光を放つ花の前で足を止め、花弁ではなく根元へ視線を落とした。土を少し掘り起こすと、根の周囲を縫うように青白い光が走り、地中に細い川が流れているかのようにゆっくり明滅した。\n\n花そのものが光を生み出しているのではなく、根を通して土壌から魔力を吸い上げ、花弁へ送り込んでいるのかもしれない。採取した土にも、通常の温室土壌より強い魔力反応が残っていた。";
  const specialQuote = "「なるほど……花弁が光っているからといって、光の発生源が花そのものとは限らないわけですね。根が土壌中の魔力を吸収し、花へと運んでいる可能性があります」\n\n「この土にも、魔力の痕跡がかなり濃く残っています。ふふ、これは面白い。花だけを観察していたら、きっと見落としていたでしょうね。持ち帰って、反応の変化を調べてみましょう」";

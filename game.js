@@ -3,8 +3,8 @@ const STORAGE='asterBotanicalJournal_v2';
 const DAILY_LIMIT=3;
 // TESTセーブは通常プレイと完全分離。オン/オフ設定だけを独立保存。
 const TEST_SAVE=STORAGE+'_test';
-const TEST_MODE_KEY=STORAGE+'_test_enabled';
-let testMode=localStorage.getItem(TEST_MODE_KEY)==='true';
+const TEST_MODE_KEY = STORAGE + '_test_enabled';
+let testMode = false;
 const activeSaveKey=()=>testMode?TEST_SAVE:STORAGE;
 const lessonLimitReached=()=>!testMode&&getDailyCount()>=DAILY_LIMIT;
 

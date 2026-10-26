@@ -11,3 +11,5 @@ nav{display:flex;gap:7px;overflow:auto;padding:4px 0 13px;margin-bottom:10px}nav
 .event-scene{white-space:pre-line;line-height:1.95;background:#f7f5ed;border-left:3px solid #b49a60;padding:14px 16px;border-radius:8px;margin:16px 0}
 
 .choice small{display:block;margin-top:4px;color:#6d786e;line-height:1.5}.choice strong{display:block}.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.choice:disabled{opacity:.45;cursor:not-allowed;transform:none;pointer-events:none}
